@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "NewMovieapp",
-    "slug": "NewMovieapp",
+    "name": "Popcornly",
+    "slug": "Popcornly",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "newmovieapp",
+    "icon": "./assets/images/PopcornlyLogo.png",
+    "scheme": "popcornly",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -13,22 +13,23 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/PopcornlyLogo.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": false,
+      "package": "com.kabth.movieapp"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/PopcornlyLogo.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/PopcornlyLogo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
@@ -37,6 +38,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0df7eac8-9936-4218-96e3-f489e3daabc2"
+      }
     }
   }
 }
