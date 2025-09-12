@@ -1,4 +1,5 @@
 // contexts/AuthContext.tsx
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import {
@@ -10,83 +11,75 @@ import {
 } from "firebase/auth";
 import { auth, db } from "@/firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
-import { makeRedirectUri } from "expo-auth-session";
+import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
 import { UserProfile } from "@/types/user";
 
-WebBrowser.maybeCompleteAuthSession();
-
+// Create context type
 type AuthContextType = {
   user: UserProfile | null;
   loading: boolean;
   signOut: () => Promise<void>;
-  signInWithGoogle: () => void;
+  signInWithGoogle: () => Promise<void>;
   setUser: React.Dispatch<React.SetStateAction<UserProfile | null>>;
-  isLogged: boolean;
-  setIsLogged: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   signOut: async () => {},
-  signInWithGoogle: () => {},
+  signInWithGoogle: async () => {},
   setUser: () => {},
-  isLogged: false,
-  setIsLogged: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isLogged, setIsLogged] = useState(false);
 
-  // Google OAuth setup
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: "872883456440-4olp54pfigfj01f5u9umb0rqgpieldmo.apps.googleusercontent.com",
-    webClientId: "872883456440-is2nn752e9m0kj12j7gfs722sau8abbk.apps.googleusercontent.com",
-    redirectUri: makeRedirectUri({ scheme: "movieapp" }),
-  });
-
-  // Handle Google sign-in result
+  // 1. Configure Google Sign-In once on mount
   useEffect(() => {
-    const signInWithGoogleFirebase = async (idToken: string, accessToken: string) => {
-      try {
-        const credential = GoogleAuthProvider.credential(idToken, accessToken);
-        const result = await signInWithCredential(auth, credential);
+    GoogleSignin.configure({
+      webClientId: "872883456440-is2nn752e9m0kj12j7gfs722sau8abbk.apps.googleusercontent.com.apps.googleusercontent.com", // Replace with your Web Client ID
+      offlineAccess: true,
+    });
+  }, []);
 
-        const userRef = doc(db, "users", result.user.uid);
-        const userSnap = await getDoc(userRef);
+  // 2. Google sign-in function
+  const signInWithGoogle = async () => {
+    try {
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      await GoogleSignin.signIn();
+      const { idToken } = await GoogleSignin.getTokens();
+      if (!idToken) throw new Error("No ID token returned from Google Sign-In");
 
-        if (!userSnap.exists()) {
-          const newUser: UserProfile = {
-            uid: result.user.uid,
-            email: result.user.email || "",
-            username: result.user.displayName || "",
-            createdAt: new Date().toISOString(),
-          };
-          await setDoc(userRef, newUser);
-          setUser(newUser);
-        }
-        setIsLogged(true);
-      } catch (err) {
+      const credential = GoogleAuthProvider.credential(idToken);
+      const result = await signInWithCredential(auth, credential);
+
+      // Sync to Firestore
+      const userRef = doc(db, "users", result.user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        const newUser: UserProfile = {
+          uid: result.user.uid,
+          email: result.user.email || "",
+          username: result.user.displayName || "",
+          createdAt: new Date().toISOString(),
+        };
+        await setDoc(userRef, newUser);
+        setUser(newUser);
+      }
+    } catch (err: any) {
+      if (err.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.warn("User cancelled login");
+      } else if (err.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        console.warn("Google Play Services not available");
+      } else {
         console.error("Google sign-in error:", err);
       }
-    };
-
-    if (response?.type === "success" && response.authentication) {
-      const { idToken, accessToken } = response.authentication;
-      if (idToken && accessToken) {
-
-        void signInWithGoogleFirebase(idToken, accessToken);
-      } else {
-        console.error("Missing tokens from Google Auth Session");
-      }
     }
-  }, [response]);
+  };
 
-  // Watch Firebase auth state
+  // 3. Listen to Firebase auth state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
@@ -101,10 +94,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             createdAt: new Date().toISOString(),
           });
         }
-        setIsLogged(true);
       } else {
         setUser(null);
-        setIsLogged(false);
       }
       setLoading(false);
     });
@@ -112,19 +103,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return unsubscribe;
   }, []);
 
+  // 4. Sign out function
   const signOut = async () => {
-    await firebaseSignOut(auth);
-    setUser(null);
-    setIsLogged(false);
-  };
-
-  const signInWithGoogle = () => {
-    if (request) promptAsync();
-    else console.warn("Google Auth Request not ready yet");
+    try {
+      await GoogleSignin.signOut();
+      await firebaseSignOut(auth);
+      setUser(null);
+    } catch (error) {
+      console.error("Sign-out error:", error);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut, signInWithGoogle, setUser, isLogged, setIsLogged }}>
+    <AuthContext.Provider value={{ user, loading, signOut, signInWithGoogle, setUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -79,7 +79,7 @@ export default function Index() {
     >
       {/* <Image source={images.bg} className="absolute w-full z-0" /> */}
       <ScrollView
-        className="flex-1 px-5"
+        className="flex-1 "
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ minHeight: "100%", paddingBottom: 10 }}
         refreshControl={
@@ -98,7 +98,7 @@ export default function Index() {
           <Text>Error: {moviesError?.message || trendingError?.message}</Text>
         ) : (
           <View className="flex-1">
-            <View className="w-full flex-row justify-between items-center mt-4 ">
+            <View className="w-full px-5 flex-row justify-between items-center mt-4 ">
               <View className="flex flex-row justify-center items-center gap-x-3">
                 <Image
                   source={icons.popcornly3}
@@ -124,7 +124,7 @@ export default function Index() {
 
             {trendingMovies && (
               <View className="mt-5">
-                <Text className="text-lg text-white font-bold mb-3">
+                <Text className="px-5 text-lg text-white font-bold mb-3">
                   Trending Movies
                 </Text>
                 <FlatList
@@ -142,23 +142,26 @@ export default function Index() {
             )}
 
             <>
-              <Text className="text-lg text-white font-bold mt-5 mb-3">
+              <Text className="px-5 text-lg text-white font-bold mt-5 mb-3">
                 Latest Movies
               </Text>
 
               <FlatList
-                data={movies}
-                renderItem={({ item }) => <MovieCard {...item} />}
-                keyExtractor={(item) => item.id.toString()}
-                numColumns={3}
-                columnWrapperStyle={{
-                  justifyContent: "flex-start",
-                  gap: 15,
-                  marginBottom: 1,
-                }}
-                className="mt-2 pb-24"
-                scrollEnabled={false}
-              />
+  data={movies}
+  renderItem={({ item }) => <MovieCard {...item} />}
+  keyExtractor={(item) => item.id.toString()}
+  numColumns={3}
+  contentContainerStyle={{
+    paddingHorizontal: 2, // space on left and right
+    alignItems: "center",  // center items horizontally
+  }}
+  columnWrapperStyle={{
+    justifyContent: "space-between", // spread items evenly in the row
+    // marginBottom: 12, // vertical gap between rows
+  }}
+  scrollEnabled={false}
+/>
+
             </>
           </View>
         )}
