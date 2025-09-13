@@ -1,67 +1,61 @@
-import {
-  db,
-  collection,
-  query,
-  where,
-  getDocs,
-  addDoc,
-  doc,
-  updateDoc,
-  orderBy,
-  limit,
-} from "@/firebaseConfig"; // Adjust this path to where you have firebase.ts
+// services/firestoreService.ts
+import { db, collection, query, where, getDocs, addDoc, updateDoc, doc, orderBy, limit } from "@/firebaseConfig";
+import { ContentItem } from "./api";
 
-// Firestore collection name (same as your metrics collection)
-const COLLECTION_ID = "metrics";
+const METRICS_COLLECTION = "metrics";
+const TV_METRICS_COLLECTION = "tvMetrics";
 
-export const updateSearchCount = async (searchTerm: string, movie: Movie) => {
-  try {
-    console.log(`updateSearchCount called with searchTerm: "${searchTerm}" and movie:`, movie);
-
-    const metricsRef = collection(db, "metrics");
-    const q = query(metricsRef, where("searchTerm", "==", searchTerm));
-    const querySnapshot = await getDocs(q);
-
-    console.log("Query results count:", querySnapshot.size);
-
-    if (!querySnapshot.empty) {
-      const docSnap = querySnapshot.docs[0];
-      const data = docSnap.data();
-      console.log("Existing doc found:", docSnap.id, data);
-
-      await updateDoc(doc(db, "metrics", docSnap.id), {
-        count: (data.count ?? 0) + 1,
-      });
-      console.log("Document updated successfully");
-    } else {
-      console.log("No doc found, creating new document");
-      await addDoc(metricsRef, {
-        searchTerm,
-        movie_id: movie.id,
-        title: movie.title,
-        count: 1,
-        poster_url: movie.poster_path
-          ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-          : "",
-      });
-      console.log("New document created successfully");
-    }
-  } catch (error) {
-    console.error("Error updating search count:", error);
-  }
+export type TrendingMovieDoc = {
+  movie_id: number;
+  title: string;
+  poster_url: string;
+  count: number;
 };
 
+export type TrendingTVDoc = {
+  tv_id: number;
+  title: string;
+  poster_url: string;
+  count: number;
+};
 
-
-export const getTrendingMovies = async (): Promise<TrendingMovie[] | undefined> => {
+export const updateSearchCount = async (searchTerm: string, item: ContentItem) => {
   try {
-    const colRef = collection(db, COLLECTION_ID);
-    const q = query(colRef, orderBy("count", "desc"), limit(5));
+    const colRef = collection(db, item.type === "movie" ? METRICS_COLLECTION : TV_METRICS_COLLECTION);
+    const q = query(colRef, where("searchTerm", "==", searchTerm));
     const snapshot = await getDocs(q);
 
-    return snapshot.docs.map((doc) => doc.data() as TrendingMovie);
-  } catch (error) {
-    console.error("Error fetching trending movies:", error);
-    return undefined;
+    if (!snapshot.empty) {
+      const docSnap = snapshot.docs[0];
+      const data = docSnap.data();
+      console.log("Existing document data:", data);
+      console.log("this is colref.path",colRef.path)
+      await updateDoc(doc(db, colRef.path, docSnap.id), {
+        count: (data.count ?? 0) + 1,
+      });
+    } else {
+      await addDoc(colRef, {
+        searchTerm,
+        [`${item.type === "movie" ? "movie_id" : "tv_id"}`]: item.id,
+        title: item.title,
+        poster_url: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : "",
+        count: 1,
+      });
+    }
+  } catch (err) {
+    console.error("Error updating search count:", err);
   }
 };
+
+export const getTrendingMovies = async (): Promise<TrendingMovieDoc[]> => {
+  const colRef = collection(db, METRICS_COLLECTION);
+  const snapshot = await getDocs(query(colRef));
+  return snapshot.docs.map((doc) => doc.data() as TrendingMovieDoc);
+};
+
+export const getTrendingTVShows = async (): Promise<TrendingTVDoc[]> => {
+  const colRef = collection(db, TV_METRICS_COLLECTION);
+  const snapshot = await getDocs(query(colRef));
+  return snapshot.docs.map((doc) => doc.data() as TrendingTVDoc);
+};
+

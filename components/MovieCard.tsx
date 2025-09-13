@@ -1,18 +1,16 @@
-//components/MovieCard.tsx
+// components/MovieCard.tsx
 import { Link } from "expo-router";
-import { Text, Image, TouchableOpacity, View } from "react-native";
-import { icons } from "@/constants/icons";
-import { useFavorites } from "@/contexts/FavoritesContext";
-import AntDesign from "@expo/vector-icons/AntDesign";
+import { Text, Image, TouchableOpacity, View, Animated } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import Fontisto from "@expo/vector-icons/Fontisto";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useFavorites } from "@/contexts/FavoritesContext";
+import { ContentItem } from "@/services/api";
+import { useEffect, useRef } from "react";
 
-type Movie = {
-  id: number;
-  poster_path?: string;
-  title: string;
-  vote_average?: number;
-  release_date?: string;
-};
+const PLACEHOLDER = "https://placehold.co/600x400/1a1a1a/FFFFFF.png";
+
+type MovieCardProps = ContentItem;
 
 const MovieCard = ({
   id,
@@ -20,86 +18,106 @@ const MovieCard = ({
   title,
   vote_average,
   release_date,
-}: Movie) => {
+  type = "movie",
+}: MovieCardProps) => {
   const { favorites, isFavorite, addFavorite, removeFavorite } = useFavorites();
-  const favorite = isFavorite(id);
+  const favorite = isFavorite(id, type);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   const toggleFavorite = () => {
+    // Scale animation on press
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.9,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
     if (favorite) {
-      const favoriteDoc = favorites.find((fav) => fav.movieId === id);
-      if (favoriteDoc) {
-        removeFavorite(favoriteDoc.id); // Pass doc ID here!
-      }
+      const favoriteDoc = favorites.find((fav) => fav.itemId === id && fav.type === type);
+      if (favoriteDoc) removeFavorite(favoriteDoc.id);
     } else {
       addFavorite({
-        movieId: id,
-        title: title,
+        itemId: id,
+        type,
+        title,
         poster: poster_path,
       });
     }
   };
 
   return (
-    <Link
-      href={{ pathname: "/movie/[id]", params: { id: String(id) } }}
-      asChild
+    <Animated.View 
+      style={{ 
+        opacity: fadeAnim,
+        transform: [{ scale: scaleAnim }] 
+      }}
+      className="w-36 "
     >
-      <TouchableOpacity className="w-[30%]">
-        {/* Image Container with Gradient Overlay */}
-        <View className="relative rounded-xl overflow-hidden aspect-[2/3] mb-3">
-          <Image
-            source={{
-              uri: poster_path
-                ? `https://image.tmdb.org/t/p/w500${poster_path}`
-                : "https://placehold.co/600x400/1a1a1a/FFFFFF.png",
-            }}
-            className="w-full h-full"
-            resizeMode="cover"
-          />
+      <Link
+        href={{
+          pathname: type === "tv" ? "/tv/[id]" : "/movie/[id]",
+          params: { id: String(id) },
+        }}
+        asChild
+      >
+        <TouchableOpacity activeOpacity={0.8}>
+          <View className="relative rounded-2xl overflow-hidden aspect-[2/3] mb-3 shadow-lg shadow-black/50">
+            <Image
+              source={{ uri: poster_path ? `https://image.tmdb.org/t/p/w500${poster_path}` : PLACEHOLDER }}
+              className="w-full h-full"
+              resizeMode="cover"
+            />
 
-          {/* Gradient Overlay */}
-          <View className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/90 to-transparent" />
+            <LinearGradient
+              colors={["transparent", "rgba(0,0,0,0.8)"]}
+              className="absolute bottom-0 left-0 right-0 h-1/3"
+            />
 
-          {/* Rating Badge */}
-          <View className="absolute top-1 left-1 flex-row items-center bg-black/70 px-2 py-1 rounded-full">
-            <Image source={icons.star} className="w-3 h-3 mr-1" />
-            <Text className="text-xs text-amber-400 font-bold">
-              {vote_average?.toFixed(1)}
-            </Text>
+            {vote_average !== undefined && (
+              <View className="absolute top-2 left-2 flex-row items-center bg-black/80 px-2 py-1 rounded-full">
+                <Ionicons name="star" size={12} color="#FFD700" />
+                <Text className="text-xs text-white font-bold ml-1">{vote_average.toFixed(1)}</Text>
+              </View>
+            )}
+
+            <TouchableOpacity
+              onPress={toggleFavorite}
+              className="absolute top-2 right-2 w-7 h-7 items-center justify-center rounded-full bg-gray-900/90"
+              activeOpacity={0.8}
+            >
+              {favorite ? (
+                <Fontisto name="favorite" size={14} color="#FFC107" />
+              ) : (
+                <Ionicons name="heart-outline" size={14} color="#fff" />
+              )}
+            </TouchableOpacity>
           </View>
-        </View>
+        </TouchableOpacity>
+      </Link>
 
-        {/* Movie Info */}
-        <Text
-          className="text-white font-bold mb-1 text-base"
-          numberOfLines={1}
-          ellipsizeMode="tail"
-        >
+      <View className="px-1">
+        <Text className="text-white font-semibold mb-1 text-sm" numberOfLines={1}>
           {title}
         </Text>
-
-        <View className="flex-row justify-between items-center">
-          <Text className="text-light-300 text-sm">
-            {release_date?.split("-")[0] || "N/A"}
-          </Text>
-          {/* <View className="bg-primary px-2 py-1 rounded-md">
-            <Text className="text-white text-xs font-medium">MOVIE</Text>
-          </View> */}
-          {/* Favorite Button */}
-          <TouchableOpacity
-            onPress={toggleFavorite}
-            className=" bg-black/60 w-8 h-8 mr-1 items-center justify-center rounded-full"
-            style={{ borderRadius: 20 }}
-          >
-            {favorite ? (
-              <Fontisto name="favorite" size={17} color="#FFC107" />
-            ) : (
-              <Image source={icons.save} className="w-5 h-5 object-contain" />
-            )}
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    </Link>
+        <Text className="text-gray-400 text-xs">{release_date?.split("-")[0] || "N/A"}</Text>
+      </View>
+    </Animated.View>
   );
 };
 
