@@ -77,7 +77,7 @@ const MovieCard = ({
         asChild
       >
         <TouchableOpacity activeOpacity={0.8}>
-          <View className="relative rounded-2xl overflow-hidden aspect-[2/3] mb-3 shadow-lg shadow-black/50">
+          <View className="relative rounded-[7px] overflow-hidden aspect-[2/3] mb-3 shadow-lg shadow-black/50">
             <Image
               source={{ uri: poster_path ? `https://image.tmdb.org/t/p/w500${poster_path}` : PLACEHOLDER }}
               className="w-full h-full"
@@ -90,7 +90,7 @@ const MovieCard = ({
             />
 
             {vote_average !== undefined && (
-              <View className="absolute top-2 left-2 flex-row items-center bg-black/80 px-2 py-1 rounded-full">
+              <View className="absolute top-[5px] left-[5px] flex-row items-center bg-black/80 px-2 py-1 rounded-full">
                 <Ionicons name="star" size={12} color="#FFD700" />
                 <Text className="text-xs text-white font-bold ml-1">{vote_average.toFixed(1)}</Text>
               </View>
@@ -98,7 +98,7 @@ const MovieCard = ({
 
             <TouchableOpacity
               onPress={toggleFavorite}
-              className="absolute top-2 right-2 w-7 h-7 items-center justify-center rounded-full bg-gray-900/90"
+              className="absolute top-[5px] right-[5px] w-7 h-7 items-center justify-center rounded-full bg-gray-900/90"
               activeOpacity={0.8}
             >
               {favorite ? (

@@ -327,7 +327,7 @@ export default function Home() {
           >
             {/* Trending Section */}
             <View className=" mt-6">
-              <View className="px-6 flex-row justify-between items-center ">
+              <View className="px-4 flex-row justify-between items-center ">
                 <Text className="text-2xl font-bold text-white">
                   Trending Now
                 </Text>
@@ -378,13 +378,13 @@ export default function Home() {
 
             {/* Rest of the content remains the same */}
             {/* Latest Movies */}
-            <View className="px-6 mb-10">
+            <View className=" mb-10">
               <View className="flex-row justify-between items-center mb-5">
-                <Text className="text-2xl font-bold text-white">
+                <Text className="text-2xl pl-4 font-bold text-white">
                   Latest Movies
                 </Text>
                 <TouchableOpacity>
-                  <Text className="text-white text-sm">View All</Text>
+                  <Text className="text-white pr-6 text-sm">View All</Text>
                 </TouchableOpacity>
               </View>
               <FlatList
@@ -393,19 +393,19 @@ export default function Home() {
                 keyExtractor={(item) => item.id.toString()}
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                ItemSeparatorComponent={() => <View className="w-4" />}
-                contentContainerStyle={{ paddingBottom: 16 }}
+                ItemSeparatorComponent={() => <View className="w-2" />}
+                contentContainerStyle={{ paddingBottom: 8, paddingLeft:10 }}
               />
             </View>
 
             {/* Latest TV Shows */}
-            <View className="px-6 mb-10">
+            <View className=" mb-10">
               <View className="flex-row justify-between items-center mb-5">
-                <Text className="text-2xl font-bold text-white">
+                <Text className="text-2xl pl-4 font-bold text-white">
                   Latest TV Series
                 </Text>
                 <TouchableOpacity>
-                  <Text className="text-white text-sm">View All</Text>
+                  <Text className="text-white pr-6 text-sm">View All</Text>
                 </TouchableOpacity>
               </View>
               <FlatList
@@ -414,8 +414,8 @@ export default function Home() {
                 keyExtractor={(item) => item.id.toString()}
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                ItemSeparatorComponent={() => <View className="w-4" />}
-                contentContainerStyle={{ paddingBottom: 16 }}
+                ItemSeparatorComponent={() => <View className="w-2" />}
+                contentContainerStyle={{ paddingBottom: 8, paddingLeft:10 }}
               />
             </View>
 
