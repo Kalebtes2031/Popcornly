@@ -4,13 +4,14 @@ import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { images } from "@/constants/images";
 import { icons } from "@/constants/icons";
+import Fontisto from "@expo/vector-icons/Fontisto";
 
 const TabIcon = ({ focused, icon, title, ionicon }: any) => {
   if (focused) {
     return (
       <ImageBackground
         source={images.bottomtabbg}
-        className="flex flex-col flex-1 w-[100px] min-h-16 mt-4 justify-center items-center rounded-full overflow-hidden"
+        className="flex flex-col w-[85px] min-h-16 mt-4 justify-center items-center rounded-full overflow-hidden"
       >
         {ionicon ? (
           <Ionicons name={ionicon} size={20} color="#151312" />
@@ -49,11 +50,11 @@ const _Layout = () => {
         tabBarStyle: {
           backgroundColor: "#030014",
           borderRadius: 56,
-          marginHorizontal: 20,
-          marginBottom: 6,
+          // marginHorizontal: 10,
+          // marginBottom: 6,
           height: 52,
           position: "absolute",
-          bottom: 13,
+          // bottom: 13,
           overflow: "hidden",
           borderWidth: 1,
           borderColor: "#030014",
@@ -70,14 +71,14 @@ const _Layout = () => {
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="search"
         options={{
           headerShown: false,
           title: "Search",
           tabBarItemStyle: { display: "none" },
         }}
-      />
+      /> */}
       <Tabs.Screen
         name="movies"
         options={{

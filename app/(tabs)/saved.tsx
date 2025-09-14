@@ -32,7 +32,7 @@ const Saved = () => {
 
   return (
     <LinearGradient
-              colors={["#0f2027", "#203a43", "#2c5364", "#437057"]}
+              colors={["#0D0D1A","#0f2027", "#203a43"]}
               className="flex-1 px-4 py-6"
             >
       <Text className="text-white text-3xl font-bold mb-6">My Favorites</Text>
@@ -62,7 +62,7 @@ const Saved = () => {
             <TouchableOpacity
               className="flex-row mb-5 items-center bg-gray-900 rounded-xl p-3"
               onPress={() => {
-                const href = `/movies/${item.movieId}` as Href;
+                const href = `/movies/${item.itemId}` as Href;
                 router.push(href);
               }}
               activeOpacity={0.8}

@@ -49,7 +49,9 @@ const MovieCard = ({
     ]).start();
 
     if (favorite) {
-      const favoriteDoc = favorites.find((fav) => fav.itemId === id && fav.type === type);
+      const favoriteDoc = favorites.find(
+        (fav) => fav.itemId === id && fav.type === type
+      );
       if (favoriteDoc) removeFavorite(favoriteDoc.id);
     } else {
       addFavorite({
@@ -62,10 +64,10 @@ const MovieCard = ({
   };
 
   return (
-    <Animated.View 
-      style={{ 
+    <Animated.View
+      style={{
         opacity: fadeAnim,
-        transform: [{ scale: scaleAnim }] 
+        transform: [{ scale: scaleAnim }],
       }}
       className="w-36 "
     >
@@ -79,7 +81,11 @@ const MovieCard = ({
         <TouchableOpacity activeOpacity={0.8}>
           <View className="relative rounded-[7px] overflow-hidden aspect-[2/3] mb-3 shadow-lg shadow-black/50">
             <Image
-              source={{ uri: poster_path ? `https://image.tmdb.org/t/p/w500${poster_path}` : PLACEHOLDER }}
+              source={{
+                uri: poster_path
+                  ? `https://image.tmdb.org/t/p/w500${poster_path}`
+                  : PLACEHOLDER,
+              }}
               className="w-full h-full"
               resizeMode="cover"
             />
@@ -92,7 +98,9 @@ const MovieCard = ({
             {vote_average !== undefined && (
               <View className="absolute top-[5px] left-[5px] flex-row items-center bg-black/80 px-2 py-1 rounded-full">
                 <Ionicons name="star" size={12} color="#FFD700" />
-                <Text className="text-xs text-white font-bold ml-1">{vote_average.toFixed(1)}</Text>
+                <Text className="text-xs text-white font-bold ml-1">
+                  {vote_average.toFixed(1)}
+                </Text>
               </View>
             )}
 
@@ -112,10 +120,15 @@ const MovieCard = ({
       </Link>
 
       <View className="px-1">
-        <Text className="text-white font-semibold mb-1 text-sm" numberOfLines={1}>
+        <Text
+          className="text-white font-semibold mb-1 text-sm"
+          numberOfLines={1}
+        >
           {title}
         </Text>
-        <Text className="text-gray-400 text-xs">{release_date?.split("-")[0] || "N/A"}</Text>
+        <Text className="text-gray-400 text-xs">
+          {release_date?.split("-")[0] || "N/A"}
+        </Text>
       </View>
     </Animated.View>
   );

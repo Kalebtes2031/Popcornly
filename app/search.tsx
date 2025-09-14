@@ -86,7 +86,7 @@ export default function SearchPage() {
   const [tvGenresMap, setTvGenresMap] = useState<Record<string, string>>({});
   const [trendingMovies, setTrendingMovies] = useState<TrendingMovieDoc[]>([]);
   const [trendingTV, setTrendingTV] = useState<TrendingTVDoc[]>([]);
-  
+
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
@@ -110,7 +110,7 @@ export default function SearchPage() {
         console.error("Error loading data:", error);
       } finally {
         setLoadingTrending(false);
-        
+
         // Animate content in
         Animated.parallel([
           Animated.timing(fadeAnim, {
@@ -147,7 +147,7 @@ export default function SearchPage() {
 
     return Array.from(map.values())
       .sort((a, b) => b.count - a.count)
-      .slice(0, 6)
+      .slice(0, 6);
   }, [trendingMovies]);
 
   // Aggregate trending TV shows to avoid duplicates
@@ -167,9 +167,8 @@ export default function SearchPage() {
 
     return Array.from(map.values())
       .sort((a, b) => b.count - a.count)
-      .slice(0, 6)
+      .slice(0, 6);
   }, [trendingTV]);
-
 
   const getPosterSource = (posterPath?: string | null, fallback?: any) => {
     if (
@@ -263,10 +262,10 @@ export default function SearchPage() {
       : PLACEHOLDER;
 
     return (
-      <Animated.View 
-        style={{ 
+      <Animated.View
+        style={{
           opacity: fadeAnim,
-          transform: [{ translateY: slideAnim }] 
+          transform: [{ translateY: slideAnim }],
         }}
       >
         <TouchableOpacity
@@ -288,12 +287,27 @@ export default function SearchPage() {
           />
           <View className="flex-1 justify-between py-2">
             <View>
-              <Text className="text-white text-lg font-bold mb-1" numberOfLines={2}>
+              <Text
+                className="text-white text-lg font-bold mb-1"
+                numberOfLines={2}
+              >
                 {item.title}
               </Text>
               <View className="flex-row items-center mb-1">
-                <View className={`px-2 py-1 rounded-full mr-2 ${item.type === "movie" ? "bg-blue-500/20" : "bg-purple-500/20"}`}>
-                  <Text className={`text-xs ${item.type === "movie" ? "text-blue-400" : "text-purple-400"}`}>
+                <View
+                  className={`px-2 py-1 rounded-full mr-2 ${
+                    item.type === "movie"
+                      ? "bg-blue-500/20"
+                      : "bg-purple-500/20"
+                  }`}
+                >
+                  <Text
+                    className={`text-xs ${
+                      item.type === "movie"
+                        ? "text-blue-400"
+                        : "text-purple-400"
+                    }`}
+                  >
                     {item.type?.toUpperCase()}
                   </Text>
                 </View>
@@ -337,7 +351,7 @@ export default function SearchPage() {
       <Animated.View
         style={{
           opacity: fadeAnim,
-          transform: [{ translateY: slideAnim }]
+          transform: [{ translateY: slideAnim }],
         }}
       >
         <TouchableOpacity
@@ -354,14 +368,14 @@ export default function SearchPage() {
           <View className="relative">
             <Image
               source={getPosterSource(item.poster_url, icons.person)}
-              className="w-40 h-56 rounded-2xl"
+              className="w-40 h-56 rounded-xl"
               resizeMode="cover"
             />
-            <LinearGradient
+            {/* <LinearGradient
               colors={["transparent", "rgba(0,0,0,0.8)"]}
               className="absolute bottom-0 left-0 right-0 h-32 rounded-b-2xl"
-            />
-            <View className="absolute bottom-3 left-3 right-3">
+            /> */}
+            {/* <View className="absolute bottom-3 left-3 right-3">
               <View className={`absolute -top-7 right-0 bg-primary rounded-full w-10 h-10 items-center justify-center ${type === "movie" ? "bg-blue-500" : "bg-purple-500"}`}>
                 <FontAwesome 
                   name={type === "movie" ? "film" : "tv"} 
@@ -372,7 +386,7 @@ export default function SearchPage() {
               <Text className="text-white text-sm font-bold" numberOfLines={2}>
                 {item.title}
               </Text>
-            </View>
+            </View> */}
           </View>
         </TouchableOpacity>
       </Animated.View>
@@ -381,18 +395,21 @@ export default function SearchPage() {
 
   return (
     <LinearGradient
-      colors={["#0D0D1A", "#1A1A3A", "#2D2B55"]}
+      colors={["#0D0D1A","#0f2027", "#203a43"]}
       className="flex-1"
     >
       {/* Header with Search Input */}
-      <View className="px-6 pt-8 pb-4 bg-black/30">
-        <Text className="text-white text-3xl font-bold mb-6">Discover</Text>
-        <View className="flex-row items-center bg-white/10 rounded-2xl px-4 py-3 shadow-lg">
-          <Ionicons name="search" size={22} color="#AB8BFF" />
+      <View className="flex flex-row w-full justify-start items-center px-3 pt-8 pb-4 bg-black/30">
+        {/* <Text className="text-white text-3xl font-bold mb-6">Discover</Text> */}
+        <TouchableOpacity onPress={() => router.back()} className="mr-4">
+          <Ionicons name="chevron-back" size={28} color="white" />
+        </TouchableOpacity>
+        <View className="flex-row  items-center bg-white/20 rounded-2xl px-4 shadow-lg">
+          <Ionicons name="search" size={22} color="#fff" />
           <TextInput
             placeholder="Search movies or TV shows..."
             placeholderTextColor="#9CA3AF"
-            className="flex-1 text-white text-base ml-3"
+            className=" text-white text-base ml-3"
             value={query}
             onChangeText={handleSearch}
             returnKeyType="search"
@@ -452,14 +469,20 @@ export default function SearchPage() {
           contentContainerStyle={{ paddingBottom: 65 }}
         >
           {/* Trending Movies */}
-          <View className="px-6 ">
-            <View className="flex-row justify-between items-center mb-5">
-              <Text className="text-white text-xl font-bold">Trending Movies</Text>
-              <TouchableOpacity>
-                <Text className="text-white text-sm">See All</Text>
+          <View className=" ">
+            <View className="flex-row px-6 justify-between items-center mb-5">
+              <Text className="text-white text-xl font-bold">
+                Trending Movies
+              </Text>
+              <TouchableOpacity
+                onPress={() => router.push("/movies")}
+                className="flex flex-row items-center"
+              >
+                <Text className="text-white text-sm">All</Text>
+                <MaterialIcons name="navigate-next" size={24} color="white" />
               </TouchableOpacity>
             </View>
-            
+
             {loadingTrending ? (
               <FlatList
                 horizontal
@@ -467,7 +490,7 @@ export default function SearchPage() {
                 data={[1, 2, 3, 4, 5, 6]}
                 keyExtractor={(item) => `skeleton-movie-${item}`}
                 renderItem={() => <SkeletonLoader />}
-                contentContainerStyle={{ paddingRight: 20 }}
+                contentContainerStyle={{ paddingHorizontal: 20 }}
               />
             ) : (
               <FlatList
@@ -480,20 +503,26 @@ export default function SearchPage() {
                 renderItem={({ item, index }) =>
                   renderTrendingItem(item, "movie", index)
                 }
-                contentContainerStyle={{ paddingRight: 20 }}
+                contentContainerStyle={{ paddingHorizontal: 20 }}
               />
             )}
           </View>
 
           {/* Trending TV Shows */}
-          <View className="px-6 mt-4">
-            <View className="flex-row justify-between items-center mb-5">
-              <Text className="text-white text-xl font-bold">Trending TV Shows</Text>
-              <TouchableOpacity>
-                <Text className="text-white text-sm">See All</Text>
+          <View className=" mt-4">
+            <View className="flex-row px-6 justify-between items-center mb-5">
+              <Text className="text-white text-xl font-bold">
+                Trending TV Shows
+              </Text>
+              <TouchableOpacity
+                onPress={() => router.push("/tvshows")}
+                className="flex flex-row  items-center"
+              >
+                <Text className="text-white text-sm">All</Text>
+                <MaterialIcons name="navigate-next" size={24} color="white" />
               </TouchableOpacity>
             </View>
-            
+
             {loadingTrending ? (
               <FlatList
                 horizontal
@@ -501,18 +530,20 @@ export default function SearchPage() {
                 data={[1, 2, 3, 4, 5, 6]}
                 keyExtractor={(item) => `skeleton-tv-${item}`}
                 renderItem={() => <SkeletonLoader />}
-                contentContainerStyle={{ paddingRight: 20 }}
+                contentContainerStyle={{ paddingHorizontal: 20 }}
               />
             ) : (
               <FlatList
                 data={aggregatedTrendingTV}
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                keyExtractor={(item, index) => `trending-tv-${item.tv_id}-${index}`}
+                keyExtractor={(item, index) =>
+                  `trending-tv-${item.tv_id}-${index}`
+                }
                 renderItem={({ item, index }) =>
                   renderTrendingItem(item, "tv", index)
                 }
-                contentContainerStyle={{ paddingRight: 20 }}
+                contentContainerStyle={{ paddingHorizontal: 20 }}
               />
             )}
           </View>

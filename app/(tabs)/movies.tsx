@@ -12,13 +12,16 @@ import {
   StyleSheet,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 import { icons } from "@/constants/icons";
 import { fetchMovies, ContentItem } from "@/services/api";
 import useFetch from "@/services/useFetch";
-import { getTrendingMovies, TrendingMovieDoc } from "@/services/firestoreService";
+import {
+  getTrendingMovies,
+  TrendingMovieDoc,
+} from "@/services/firestoreService";
 
 const { width } = Dimensions.get("window");
 
@@ -31,7 +34,7 @@ const PLACEHOLDER = "https://placehold.co/600x400/1a1a1a/FFFFFF.png";
 export default function Movies() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
-  const [viewType, setViewType] = useState<"latest" | "trending">("latest");
+  const [viewType, setViewType] = useState<"latest" | "trending">("trending");
 
   // Fetch latest movies
   const {
@@ -80,23 +83,31 @@ export default function Movies() {
   };
 
   const renderItem = ({ item }: any) => (
-    <TouchableOpacity style={styles.card}>
-      <Image
-        source={{
-          uri:
-            viewType === "latest"
-              ? item.poster_path
-                ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                : PLACEHOLDER
-              : item.poster_url || PLACEHOLDER,
-        }}
-        style={styles.image}
-        resizeMode="cover"
-      />
-      <Text style={styles.title} numberOfLines={1}>
+    <Link
+      href={{
+        pathname: "/movie/[id]",
+        params: { id: String(item.id) },
+      }}
+      asChild
+    >
+      <TouchableOpacity style={styles.card}>
+        <Image
+          source={{
+            uri:
+              viewType === "latest"
+                ? item.poster_path
+                  ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                  : PLACEHOLDER
+                : item.poster_url || PLACEHOLDER,
+          }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        {/* <Text style={styles.title} numberOfLines={1}>
         {item.title || "Untitled"}
-      </Text>
-    </TouchableOpacity>
+      </Text> */}
+      </TouchableOpacity>
+    </Link>
   );
 
   // Choose dataset
@@ -119,23 +130,54 @@ export default function Movies() {
 
   return (
     <LinearGradient
-      colors={["#0D0D1A", "#1A1A3A", "#2D2B55"]}
+      colors={["#0D0D1A","#0f2027", "#203a43"]}
       className="flex-1"
     >
       <StatusBar style="light" />
 
       {/* Header */}
-      <View className="absolute top-0 left-0 right-0 z-10 bg-[#0D0D1A]/90 px-6 h-16 flex-row justify-between items-center">
-        <View className="flex flex-row items-center gap-x-3">
-          <Image source={icons.popcornly3} className="w-10 h-10" />
-          <Text className="text-2xl font-bold text-white">Popcornly</Text>
+      <View className="absolute top-0 left-0 right-0 z-10 bg-[#0D0D1A]/90 px-6 pt-8 h-[90px] flex-col justify-center items-center">
+        <View className="flex-row w-full justify-between items-center">
+          <View className="flex flex-row items-center gap-x-3">
+            <Image source={icons.popcornly3} className="w-10 h-10" />
+            <Text className="text-2xl font-bold text-white">Popcornly</Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => router.push("/search")}
+            className="w-10 h-10 rounded-full bg-primary/20 items-center justify-center"
+          >
+            <Image
+              source={icons.search}
+              className="w-5 h-5"
+              tintColor="#fff"
+            />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          onPress={() => router.push("/search")}
-          className="w-10 h-10 rounded-full bg-primary/20 items-center justify-center"
-        >
-          <Image source={icons.search} className="w-5 h-5" tintColor="#AB8BFF" />
-        </TouchableOpacity>
+        <View className=" mb-6 pt-4 flex flex-row justify-start items-start w-full">
+          <View className="flex flex-row bg-white/10 p-1 rounded-xl">
+            <View className="flex-row">
+              <TouchableOpacity
+                onPress={() => setViewType("trending")}
+                className={`px-4 p-[2px] rounded-full ${
+                  viewType === "trending" ? "bg-primary" : ""
+                }`}
+              >
+                <Text className="text-sm font-semibold text-white">
+                  Trending
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setViewType("latest")}
+                className={`px-4 p-[2px] rounded-xl ${
+                  viewType === "latest" ? "bg-primary" : ""
+                }`}
+              >
+                <Text className="text-sm font-semibold text-white">Latest</Text>
+              </TouchableOpacity>
+              
+            </View>
+          </View>
+        </View>
       </View>
 
       {isLoading && !refreshing ? (
@@ -164,9 +206,24 @@ export default function Movies() {
         <FlatList
           data={displayedData}
           keyExtractor={(item, index) => `${item.id}-${index}`}
-          renderItem={renderItem}
+          renderItem={({ item, index }) => (
+            <View
+              style={{
+                flex: 1 / 3,
+                marginBottom: 12,
+                marginRight: index % 3 !== 2 ? 8 : 0,
+              }}
+            >
+              {renderItem({ item })}
+            </View>
+          )}
           numColumns={3}
-          contentContainerStyle={[styles.container, { paddingTop: 70, paddingBottom: 30 }]}
+          contentContainerStyle={[{ paddingTop: 100, paddingBottom: 50 }]}
+          columnWrapperStyle={{
+            flex: 1,
+            justifyContent: "flex-start",
+            marginHorizontal: CARD_MARGIN,
+          }}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -175,32 +232,6 @@ export default function Movies() {
               tintColor="#AB8BFF"
               colors={["#AB8BFF"]}
             />
-          }
-          ListHeaderComponent={
-            <View className="px-6 mb-4 flex-row justify-between items-center">
-              <View className="flex-row bg-[#151312]/50 rounded-full p-1">
-                <TouchableOpacity
-                  onPress={() => setViewType("latest")}
-                  className={`px-4 py-1 rounded-full ${
-                    viewType === "latest" ? "bg-primary/30" : ""
-                  }`}
-                >
-                  <Text className="text-sm font-semibold text-white">
-                    Latest
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setViewType("trending")}
-                  className={`px-4 py-1 rounded-full ${
-                    viewType === "trending" ? "bg-primary/30" : ""
-                  }`}
-                >
-                  <Text className="text-sm font-semibold text-white">
-                    Trending
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
           }
         />
       )}
@@ -214,7 +245,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: CARD_WIDTH,
-    margin: CARD_MARGIN,
+    // margin: CARD_MARGIN,
     backgroundColor: "#222",
     borderRadius: 10,
     overflow: "hidden",

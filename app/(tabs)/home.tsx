@@ -61,6 +61,120 @@ const zoomOut = {
   },
 };
 
+// Skeleton Components
+const SkeletonLoader = () => {
+  return (
+    <View className="mr-5 w-40">
+      <View className="w-40 h-56 bg-gray-700 rounded-2xl animate-pulse" />
+    </View>
+  );
+};
+
+const SkeletonHeaderLoader = () => {
+  return (
+    <View className="px-4 flex-row justify-between items-center mb-4">
+      <View className="w-32 h-6 bg-gray-700 rounded animate-pulse" />
+      <View className="w-20 h-8 bg-gray-700 rounded animate-pulse" />
+    </View>
+  );
+};
+
+const SkeletonTrendingCarousel = () => {
+  return (
+    <View className="mt-4">
+      <FlatList
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        data={[1, 2, 3, 4, 5, 6]}
+        keyExtractor={(item) => `skeleton-trending-${item}`}
+        renderItem={({ index }) => (
+          <View 
+            className={`h-80 rounded-2xl overflow-hidden mx-2 ${index === 0 ? 'ml-4' : ''} ${index === 5 ? 'mr-4' : ''}`}
+            style={{ width: width * 0.72 }}
+          >
+            <View className="w-full h-[180px] bg-gray-700 rounded-2xl" />
+          </View>
+        )}
+        contentContainerStyle={{ paddingRight: 20 }}
+      />
+    </View>
+  );
+};
+
+const SkeletonCategoryGrid = () => {
+  return (
+    <View className="px-6 mb-10">
+      <View className="w-48 h-6 bg-gray-700 rounded mb-5" />
+      <View className="flex-row flex-wrap justify-between">
+        {[1, 2, 3, 4, 5, 6].map((item) => (
+          <View key={item} className="w-[30%] bg-gray-700 rounded-2xl p-4 items-center justify-center mb-4">
+            <View className="w-12 h-12 bg-gray-600 rounded-full mb-2" />
+            <View className="w-16 h-4 bg-gray-600 rounded" />
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
+const HomePageSkeleton = () => {
+  return (
+    <LinearGradient
+      colors={["#0D0D1A","#0f2027", "#203a43"]}
+      className="flex-1"
+    >
+      <StatusBar style="light" />
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 30, }}
+      >
+        {/* Trending Section Skeleton */}
+        <View className="mt-6">
+          <SkeletonHeaderLoader />
+          <SkeletonTrendingCarousel />
+        </View>
+
+        {/* Latest Movies Skeleton */}
+        <View className="mb-10 mt-8">
+          <View className="flex-row justify-between items-center mb-5 px-4">
+            <View className="w-40 h-6 bg-gray-700 rounded" />
+            <View className="w-12 h-6 bg-gray-700 rounded" />
+          </View>
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={[1, 2, 3, 4, 5, 6]}
+            keyExtractor={(item) => `skeleton-movie-${item}`}
+            renderItem={() => <SkeletonLoader />}
+            contentContainerStyle={{ paddingHorizontal: 20 }}
+          />
+        </View>
+
+        {/* Latest TV Shows Skeleton */}
+        <View className="mb-10">
+          <View className="flex-row justify-between items-center mb-5 px-4">
+            <View className="w-40 h-6 bg-gray-700 rounded" />
+            <View className="w-12 h-6 bg-gray-700 rounded" />
+          </View>
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={[1, 2, 3, 4, 5, 6]}
+            keyExtractor={(item) => `skeleton-tv-${item}`}
+            renderItem={() => <SkeletonLoader />}
+            contentContainerStyle={{ paddingHorizontal: 20 }}
+          />
+        </View>
+
+        {/* Categories Skeleton */}
+        <SkeletonCategoryGrid />
+      </ScrollView>
+    </LinearGradient>
+  );
+};
+
+
 export default function Home() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
@@ -270,7 +384,7 @@ export default function Home() {
           <Image
             source={icons.search}
             className="w-5 h-5"
-            tintColor="#AB8BFF"
+            tintColor="#fff"
           />
         </TouchableOpacity>
       </View>
@@ -293,10 +407,7 @@ export default function Home() {
           tvShowsLoading ||
           trendingTVLoading) &&
         !refreshing ? (
-          <View className="flex-1 justify-center items-center h-96">
-            <ActivityIndicator size="large" color="#AB8BFF" />
-            <Text className="text-white mt-4">Loading ...</Text>
-          </View>
+          <HomePageSkeleton />
         ) : moviesError || trendingError || tvShowsError || trendingTVError ? (
           <View className="flex-1 justify-center items-center h-96 px-6">
             <View className="bg-red-500/10 p-6 rounded-2xl items-center">
@@ -372,8 +483,6 @@ export default function Home() {
               </View>
 
               <TrendingCarousel items={displayedTrending} />
-
-              
             </View>
 
             {/* Rest of the content remains the same */}
@@ -383,8 +492,12 @@ export default function Home() {
                 <Text className="text-2xl pl-4 font-bold text-white">
                   Latest Movies
                 </Text>
-                <TouchableOpacity>
-                  <Text className="text-white pr-6 text-sm">View All</Text>
+                <TouchableOpacity
+                  onPress={() => router.push("/movies")}
+                  className="flex flex-row items-center mr-3"
+                >
+                  <Text className="text-white text-sm">All</Text>
+                  <MaterialIcons name="navigate-next" size={24} color="white" />
                 </TouchableOpacity>
               </View>
               <FlatList
@@ -394,7 +507,7 @@ export default function Home() {
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 ItemSeparatorComponent={() => <View className="w-2" />}
-                contentContainerStyle={{ paddingBottom: 8, paddingLeft:10 }}
+                contentContainerStyle={{ paddingBottom: 8, paddingLeft: 10 }}
               />
             </View>
 
@@ -404,8 +517,12 @@ export default function Home() {
                 <Text className="text-2xl pl-4 font-bold text-white">
                   Latest TV Series
                 </Text>
-                <TouchableOpacity>
-                  <Text className="text-white pr-6 text-sm">View All</Text>
+                <TouchableOpacity
+                  onPress={() => router.push("/tvshows")}
+                  className="flex flex-row items-center mr-3"
+                >
+                  <Text className="text-white text-sm">All</Text>
+                  <MaterialIcons name="navigate-next" size={24} color="white" />
                 </TouchableOpacity>
               </View>
               <FlatList
@@ -415,7 +532,7 @@ export default function Home() {
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 ItemSeparatorComponent={() => <View className="w-2" />}
-                contentContainerStyle={{ paddingBottom: 8, paddingLeft:10 }}
+                contentContainerStyle={{ paddingBottom: 8, paddingLeft: 10 }}
               />
             </View>
 
