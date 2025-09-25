@@ -1,50 +1,117 @@
-# Welcome to your Expo app 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+---
 
-## Get started
+# 🍿 Popcornly
 
-1. Install dependencies
+**Popcornly** is a fully-featured movie and TV series app built with **React Native (Expo)** and **Firebase**. It allows users to discover, search, and save their favorite movies and TV shows using **TMDB API**, with authentication powered by **Firebase Email/Password** and **Google OAuth**.
 
-   ```bash
-   npm install
-   ```
+---
 
-2. Start the app
+## 🎯 Features
 
-   ```bash
-   npx expo start
-   ```
+* 🔹 Browse latest movies and TV series
+* 🔹 Search for movies and TV series
+* 🔹 Trending content based on user searches
+* 🔹 Save favorite movies and TV shows
+* 🔹 User authentication: Email/Password & Google OAuth
+* 🔹 Real-time updates with **Firebase Firestore**
+* 🔹 Smooth, responsive UI using **NativeWind CSS**
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🛠️ Tech Stack
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+* **Frontend:** React Native with Expo
+* **Styling:** NativeWind CSS
+* **Backend:** Firebase (Authentication, Firestore, Realtime Database)
+* **API:** TMDB API (The Movie Database)
+* **Authentication:** Firebase Email/Password & Google OAuth
 
-## Get a fresh project
+---
 
-When you're ready, run:
+## 📸 Screenshots
+
+*Home Screen*
+![Home Screen](./screenshots/home.png)
+
+*Movies Screen*
+![Movies Screen](./screenshots/movies.png)
+
+*TV Series Screen*
+![TV Series Screen](./screenshots/tvseries.png)
+
+*Favorites / Saved*
+![Saved Screen](./screenshots/saved.png)
+
+*Profile Screen*
+![Profile Screen](./screenshots/profile.png)
+
+*Search & Trending*
+![Search Screen](./screenshots/search.png)
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+* Node.js >= 18.x
+* Expo CLI (`npm install -g expo-cli`)
+* Firebase account & project
+
+### Installation
+
+1. Clone the repository:
 
 ```bash
-npm run reset-project
+git clone https://github.com/yourusername/popcornly.git
+cd popcornly
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Install dependencies:
 
-## Learn more
+```bash
+npm install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+3. Configure Firebase:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+* Create a Firebase project and enable **Authentication** and **Firestore**
+* Copy your Firebase config from the Firebase console and replace the `.env` values or `firebaseConfig.ts` in the project.
 
-## Join the community
+4. Set up environment variables:
 
-Join our community of developers creating universal apps.
+```env
+EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
+EXPO_PUBLIC_TMDB_API_KEY=your_tmdb_api_key
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+5. Run the app:
+
+```bash
+expo start
+```
+
+---
+
+## 🔑 Authentication
+
+* Sign up / Sign in with **Email & Password**
+* Sign in with **Google OAuth**
+* Persistent login with Firebase and AsyncStorage
+
+---
+
+## ⚡ Notes
+
+* TMDB API is used for fetching movies and TV series data.
+* Saved/favorite items are stored in Firebase Firestore under the authenticated user.
+* Trending logic is based on search activity.
+
+---
+

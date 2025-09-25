@@ -58,4 +58,3 @@ export const getTrendingTVShows = async (): Promise<TrendingTVDoc[]> => {
   const snapshot = await getDocs(query(colRef));
   return snapshot.docs.map((doc) => doc.data() as TrendingTVDoc);
 };
-
