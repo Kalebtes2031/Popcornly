@@ -32,15 +32,17 @@ It combines TMDB content APIs with Firebase Auth + Firestore to deliver:
 
 <div align="center" style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;">
 
+  <img src="./docs/screenshots/auth.jpg" height="450" alt="Auth" />
+  <img src="./docs/screenshots/auth-create.jpg" height="450" alt="Auth-create" />
   <img src="./docs/screenshots/home.jpg" height="450" alt="Home" />
   <img src="./docs/screenshots/movies.jpg" height="450" alt="Movies" />
   <img src="./docs/screenshots/tvshows.jpg" height="450" alt="TV Shows" />
+  <img src="./docs/screenshots/profile.jpg" height="450" alt="Profile" />
+  <img src="./docs/screenshots/saved.jpg" height="450" alt="Saved" />
   <img src="./docs/screenshots/search.jpg" height="450" alt="Search" />
+  <img src="./docs/screenshots/searching.jpg" height="450" alt="Searching" />
   <img src="./docs/screenshots/movie-details.jpg" height="450" alt="Movie Details" />
   <img src="./docs/screenshots/tv-details.jpg" height="450" alt="TV Details" />
-  <img src="./docs/screenshots/saved.jpg" height="450" alt="Saved" />
-  <img src="./docs/screenshots/profile.jpg" height="450" alt="Profile" />
-  <img src="./docs/screenshots/auth.jpg" height="450" alt="Auth" />
 
 </div>
 
