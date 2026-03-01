@@ -31,7 +31,7 @@ It combines TMDB content APIs with Firebase Auth + Firestore to deliver:
 ## Screenshots
 
 ### Home
-![Home](./docs/screenshots/home.png)
+![Home](docs/screenshots/home.png)
 
 ### Movies
 ![Movies](./docs/screenshots/movies.png)
