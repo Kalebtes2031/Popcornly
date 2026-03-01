@@ -31,31 +31,31 @@ It combines TMDB content APIs with Firebase Auth + Firestore to deliver:
 ## Screenshots
 
 ### Home
-![Home](docs/screenshots/home.png)
+![Home](docs/screenshots/home.jpg)
 
 ### Movies
-![Movies](./docs/screenshots/movies.png)
+![Movies](./docs/screenshots/movies.jpg)
 
 ### TV Shows
-![TV Shows](./docs/screenshots/tvshows.png)
+![TV Shows](./docs/screenshots/tvshows.jpg)
 
 ### Search
-![Search](./docs/screenshots/search.png)
+![Search](./docs/screenshots/search.jpg)
 
 ### Movie Details
-![Movie Details](./docs/screenshots/movie-details.png)
+![Movie Details](./docs/screenshots/movie-details.jpg)
 
 ### TV Details
-![TV Details](./docs/screenshots/tv-details.png)
+![TV Details](./docs/screenshots/tv-details.jpg)
 
 ### Saved
-![Saved](./docs/screenshots/saved.png)
+![Saved](./docs/screenshots/saved.jpg)
 
 ### Profile
-![Profile](./docs/screenshots/profile.png)
+![Profile](./docs/screenshots/profile.jpg)
 
 ### Auth
-![Auth](./docs/screenshots/auth.png)
+![Auth](./docs/screenshots/auth.jpg)
 
 
 ## Architecture
