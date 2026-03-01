@@ -1,10 +1,10 @@
 import React, { useRef, useState } from "react";
-import { 
-  View, 
-  Dimensions, 
+import {
+  View,
+  Dimensions,
   StyleSheet,
   Animated,
-  Platform 
+  Platform,
 } from "react-native";
 import TrendingCard, { ITEM_WIDTH } from "./TrendingCard";
 import { TrendingItem } from "@/services/api";
@@ -19,7 +19,7 @@ type TrendingCarouselProps = {
 const TrendingCarousel: React.FC<TrendingCarouselProps> = ({ items }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
-  
+
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: Array<{ index: number | null }> }) => {
       if (viewableItems.length > 0 && viewableItems[0].index !== null) {
@@ -51,6 +51,8 @@ const TrendingCarousel: React.FC<TrendingCarouselProps> = ({ items }) => {
         contentContainerStyle={styles.flatListContent}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
+        // Allow rendering outside bounds to prevent clipping during animations
+        removeClippedSubviews={false}
         renderItem={({ item, index }) => {
           const inputRange = [
             (index - 2) * (ITEM_WIDTH + SPACING),
@@ -62,19 +64,20 @@ const TrendingCarousel: React.FC<TrendingCarouselProps> = ({ items }) => {
 
           const translateY = scrollX.interpolate({
             inputRange,
-            outputRange: [0, -40, -40, -40, 0],
+            // Reduced lift to -20 for a subtler effect, avoiding excessive clipping
+            outputRange: [0, -20, -20, -20, 0],
             extrapolate: "clamp",
           });
 
           const scale = scrollX.interpolate({
             inputRange,
-            outputRange: [0.85, 0.9, 1, 0.9, 0.85],
+            outputRange: [0.9, 0.95, 1, 0.95, 0.9],
             extrapolate: "clamp",
           });
 
           const opacity = scrollX.interpolate({
             inputRange,
-            outputRange: [0.6, 0.7, 1, 0.7, 0.6],
+            outputRange: [0.6, 0.8, 1, 0.8, 0.6],
             extrapolate: "clamp",
           });
 
@@ -89,8 +92,8 @@ const TrendingCarousel: React.FC<TrendingCarouselProps> = ({ items }) => {
                 },
               ]}
             >
-              <TrendingCard 
-                item={item} 
+              <TrendingCard
+                item={item}
                 isActive={activeIndex === index}
               />
             </Animated.View>
@@ -103,16 +106,23 @@ const TrendingCarousel: React.FC<TrendingCarouselProps> = ({ items }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 24,
+    // marginTop:4,
+    // Add top padding so the card has room to rise without being cut off
+    paddingTop: 20,
+    // Ensure the container doesn't clip its children
+    overflow: "visible",
   },
   flatListContent: {
     alignItems: "center",
     paddingHorizontal: (SCREEN_WIDTH - ITEM_WIDTH) / 2,
-    
+    // Add vertical padding to give the card space above and below
+    paddingVertical: 20,
   },
   cardWrapper: {
     marginHorizontal: SPACING / 2,
-    height: ITEM_WIDTH * 1.6, // aspect ratio
+    height: ITEM_WIDTH * 1.6, // Maintain aspect ratio
+    // Make sure the wrapper doesn't clip the card's shadow or rounded corners
+    overflow: "visible",
   },
 });
 

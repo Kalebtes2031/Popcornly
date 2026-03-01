@@ -76,7 +76,7 @@ export default function SignIn() {
         style={styles.content}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Welcome Back</Text>
+          <Text style={styles.title}>Welcome</Text>
           <Text style={styles.subtitle}>Sign in to continue your journey</Text>
         </View>
 

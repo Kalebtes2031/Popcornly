@@ -17,7 +17,7 @@ import {
 import { FlashList } from "@shopify/flash-list";
 import { Image } from "expo-image";
 
-import { COLORS, COMMON_STYLES } from "@/constants/Styles";
+import { COLORS, COMMON_STYLES, TYPOGRAPHY } from "@/constants/Styles";
 
 const Saved = () => {
   const { favorites, loading, removeFavorite } = useFavorites();
@@ -113,7 +113,7 @@ const Saved = () => {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 24,
-    paddingTop: 32,
+    paddingTop: 12,
   },
   loadingContainer: {
     flex: 1,
@@ -126,9 +126,9 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   headerTitle: {
-    color: "#FFFFFF",
+    color: COLORS.text,
     fontSize: 28,
-    fontWeight: "bold",
+    fontFamily: TYPOGRAPHY.title,
     marginBottom: 24,
   },
   emptyContainer: {
@@ -138,14 +138,14 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   emptyTitle: {
-    color: "#FFFFFF",
+    color: COLORS.text,
     fontSize: 20,
-    fontWeight: "600",
+    fontFamily: TYPOGRAPHY.title,
     marginTop: 24,
     marginBottom: 8,
   },
   emptySubtitle: {
-    color: "#9CA3AF",
+    color: COLORS.textMuted,
     textAlign: "center",
     fontSize: 16,
     maxWidth: "80%",
@@ -161,6 +161,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.card,
     borderRadius: 16,
     padding: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -186,9 +188,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   itemTitle: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    fontSize: 18,
+    color: COLORS.text,
+    fontFamily: TYPOGRAPHY.title,
+    fontSize: 17,
     marginBottom: 4,
   },
   savedBadge: {
@@ -213,6 +215,8 @@ const styles = StyleSheet.create({
   removeButton: {
     padding: 8,
     marginLeft: 8,
+    backgroundColor: "rgba(255, 111, 97, 0.1)",
+    borderRadius: 12,
   },
 });
 

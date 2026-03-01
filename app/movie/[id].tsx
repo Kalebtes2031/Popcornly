@@ -1,479 +1,373 @@
-import { COLORS, COMMON_STYLES } from "@/constants/Styles";
-import { StyleSheet, View, Text, ActivityIndicator, ScrollView, TouchableOpacity, Linking } from "react-native";
+﻿import React from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { icons } from "@/constants/icons";
-import { queryKeys } from "@/constants/queryKeys";
 import { useQuery } from "@tanstack/react-query";
-import { fetchMovieDetails } from "@/services/api";
-import { useFavorites } from "@/contexts/FavoritesContext";
 import { Ionicons } from "@expo/vector-icons";
 
-interface MovieInfoProps {
+import { COLORS, COMMON_STYLES, TYPOGRAPHY } from "@/constants/Styles";
+import { icons } from "@/constants/icons";
+import { queryKeys } from "@/constants/queryKeys";
+import { fetchMovieDetails } from "@/services/api";
+import { useFavorites } from "@/contexts/FavoritesContext";
+
+interface InfoRowProps {
   label: string;
   value?: string | number | null;
 }
 
-// Format runtime from minutes to "Xh Ym"
-const formatRuntime = (runtime: number | undefined) => {
-  if (!runtime) return "N/A";
+const formatRuntime = (runtime?: number) => {
+  if (!runtime || runtime <= 0) return "N/A";
   const hours = Math.floor(runtime / 60);
   const minutes = runtime % 60;
   return `${hours}h ${minutes}m`;
 };
 
-// Format budget/revenue in million dollars with one decimal place
-const formatCurrency = (num: number) => {
-  return `$${(num / 1_000_000).toFixed(1)} million`;
+const formatCurrency = (value?: number) => {
+  if (!value || value <= 0) return "N/A";
+  return `$${(value / 1_000_000).toFixed(1)}M`;
 };
 
-// Helper to check positive number
-const isPositiveNumber = (value?: number | null): value is number =>
-  typeof value === "number" && value > 0;
-
-const MovieInfo = ({ label, value }: MovieInfoProps) => (
-  <View style={styles.infoRow}>
+const InfoRow = ({ label, value }: InfoRowProps) => (
+  <View style={styles.infoBlock}>
     <Text style={styles.infoLabel}>{label}</Text>
-    <Text style={styles.infoValue} numberOfLines={3}>
-      {value !== null && value !== undefined ? value : "N/A"}
-    </Text>
+    <Text style={styles.infoValue}>{value ?? "N/A"}</Text>
   </View>
 );
 
-const Details = () => {
+export default function MovieDetails() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
+  const movieId = Array.isArray(id) ? id[0] : id;
 
   const {
     data: movie,
-    isLoading: loading,
+    isLoading,
     error,
   } = useQuery({
-    queryKey: queryKeys.movieDetails(id as string),
-    queryFn: () => fetchMovieDetails(id as string),
+    queryKey: queryKeys.movieDetails(movieId ?? ""),
+    queryFn: () => fetchMovieDetails(String(movieId)),
+    enabled: Boolean(movieId),
   });
 
   const { favorites, isFavorite, addFavorite, removeFavorite } = useFavorites();
-  const favorite = isFavorite(id as string, "movie");
+  const favorite = isFavorite(String(movieId), "movie");
 
-  const toggleFavorite = () => {
+  const toggleFavorite = async () => {
+    if (!movieId || !movie) return;
+
     if (favorite) {
-      const favoriteDoc = favorites.find((fav) => String(fav.itemId) === String(id) && fav.type === "movie");
+      const favoriteDoc = favorites.find(
+        (item) => String(item.itemId) === String(movieId) && item.type === "movie"
+      );
       if (favoriteDoc) {
-        removeFavorite(favoriteDoc.id);
+        await removeFavorite(favoriteDoc.id);
       }
-    } else {
-      if (movie) {
-        addFavorite({
-          itemId: id as string,
-          type: "movie",
-          title: movie.title,
-          poster: movie.poster_path,
-        });
-      }
+      return;
     }
+
+    await addFavorite({
+      itemId: String(movieId),
+      type: "movie",
+      title: movie.title,
+      poster: movie.poster_path,
+    });
   };
 
-  if (loading)
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.accent} />
-      </View>
-    );
+  const openHomepage = async () => {
+    if (!movie?.homepage) {
+      Alert.alert("Trailer unavailable", "No homepage or trailer link was provided.");
+      return;
+    }
 
-  if (error)
+    const canOpen = await Linking.canOpenURL(movie.homepage);
+    if (!canOpen) {
+      Alert.alert("Unable to open", "The provided link cannot be opened on this device.");
+      return;
+    }
+
+    Linking.openURL(movie.homepage);
+  };
+
+  if (!movieId) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>
-          Oops! Something went wrong: {error.message}
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.retryButton}
-        >
-          <Text style={styles.retryText}>Go Back</Text>
+      <View style={styles.centeredState}>
+        <Text style={styles.stateTitle}>Invalid movie id</Text>
+        <TouchableOpacity style={styles.primaryButton} onPress={() => router.back()}>
+          <Text style={styles.primaryButtonText}>Go back</Text>
         </TouchableOpacity>
       </View>
     );
+  }
+
+  if (isLoading) {
+    return (
+      <View style={styles.centeredState}>
+        <ActivityIndicator size="large" color={COLORS.accent} />
+        <Text style={styles.stateBody}>Loading movie details...</Text>
+      </View>
+    );
+  }
+
+  if (error || !movie) {
+    return (
+      <View style={styles.centeredState}>
+        <Text style={styles.stateTitle}>Failed to load details</Text>
+        <Text style={styles.stateBody}>{error instanceof Error ? error.message : "Try again later."}</Text>
+        <TouchableOpacity style={styles.primaryButton} onPress={() => router.back()}>
+          <Text style={styles.primaryButtonText}>Go back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const posterUri = movie.poster_path
+    ? `https://image.tmdb.org/t/p/w780${movie.poster_path}`
+    : "https://placehold.co/780x1170/0F172A/E2E8F0.png";
+
+  const genres = Array.isArray(movie.genres)
+    ? movie.genres.map((genre: { name: string }) => genre.name).join("  |  ")
+    : "N/A";
 
   return (
     <View style={COMMON_STYLES.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Poster + Play Button */}
-        <View style={styles.posterContainer}>
-          <Image
-            source={{
-              uri: `https://image.tmdb.org/t/p/w500${movie?.poster_path}`,
-            }}
-            style={styles.heroPoster}
-            contentFit="cover"
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.heroWrap}>
+          <Image source={{ uri: posterUri }} style={styles.heroImage} contentFit="cover" />
+          <LinearGradient
+            colors={["transparent", "rgba(7, 11, 20, 0.94)"]}
+            style={styles.heroOverlay}
           />
 
-          <TouchableOpacity
-            style={styles.playButton}
-            onPress={() => {
-              if (movie?.homepage) {
-                Linking.openURL(movie.homepage);
-              } else {
-                alert("Trailer not available");
-              }
-            }}
-          >
-            <Image
-              source={icons.play}
-              style={styles.playIcon}
-              contentFit="contain"
-            />
+          <TouchableOpacity style={styles.heroBack} onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={20} color={COLORS.text} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.playButton} onPress={openHomepage}>
+            <Image source={icons.play} style={styles.playIcon} contentFit="contain" />
           </TouchableOpacity>
         </View>
 
-        {/* Movie Basic Info */}
-        <View style={styles.cardContainer}>
-          <View style={styles.headerRow}>
-            <Text style={styles.movieTitle}>
-              {movie?.title}
+        <View style={styles.card}>
+          <View style={styles.titleRow}>
+            <Text style={styles.title} numberOfLines={2}>
+              {movie.title}
             </Text>
-            {/* Favorite Button */}
-            <TouchableOpacity
-              onPress={toggleFavorite}
-              style={styles.favoriteButton}
-            >
+            <TouchableOpacity onPress={toggleFavorite} style={styles.favoriteButton}>
               <Ionicons
                 name={favorite ? "heart" : "heart-outline"}
                 size={22}
-                color={favorite ? "#EF4444" : "#FFFFFF"}
+                color={favorite ? "#FF6F61" : COLORS.text}
               />
             </TouchableOpacity>
           </View>
 
-          {movie?.tagline ? (
-            <Text style={styles.tagline}>
-              {movie.tagline}
-            </Text>
-          ) : null}
+          {movie.tagline ? <Text style={styles.tagline}>{movie.tagline}</Text> : null}
 
           <View style={styles.metaRow}>
-            <Text style={styles.metaText}>
-              {movie?.release_date?.split("-")[0] || "N/A"}
-            </Text>
-            <Text style={styles.metaDot}>•</Text>
-            <Text style={styles.metaText}>
-              {formatRuntime(movie?.runtime ?? undefined)}
-            </Text>
+            <Text style={styles.metaText}>{movie.release_date?.split("-")[0] || "N/A"}</Text>
+            <Text style={styles.metaText}>{formatRuntime(movie.runtime)}</Text>
+            <Text style={styles.metaText}>Rating {(movie.vote_average ?? 0).toFixed(1)}</Text>
           </View>
 
-          <View style={styles.ratingBadge}>
-            <Image source={icons.star} style={styles.starIcon} />
-            <Text style={styles.ratingText}>
-              {movie?.vote_average?.toFixed(1) ?? 0}
-            </Text>
-            <Text style={styles.voteCount}>
-              ({movie?.vote_count} votes)
-            </Text>
+          <InfoRow label="Overview" value={movie.overview || "N/A"} />
+          <InfoRow label="Genres" value={genres} />
+
+          <View style={styles.doubleInfoRow}>
+            <InfoRow label="Budget" value={formatCurrency(movie.budget)} />
+            <InfoRow label="Revenue" value={formatCurrency(movie.revenue)} />
           </View>
 
-          {/* Overview */}
-          <MovieInfo label="Overview" value={movie?.overview} />
-
-          {/* Genres */}
-          <MovieInfo
-            label="Genres"
-            value={movie?.genres?.map((g: any) => g.name).join(" • ") || "N/A"}
-          />
-
-          {/* Budget and Revenue */}
-          <View style={styles.financialRow}>
-            {isPositiveNumber(movie?.budget) && (
-              <MovieInfo label="Budget" value={formatCurrency(movie.budget)} />
+          <Text style={styles.sectionLabel}>Production Companies</Text>
+          <View style={styles.companyList}>
+            {Array.isArray(movie.production_companies) && movie.production_companies.length > 0 ? (
+              movie.production_companies.slice(0, 8).map((company: { id: number; name: string }) => (
+                <View key={company.id} style={styles.companyTag}>
+                  <Text style={styles.companyTagText}>{company.name}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.stateBody}>N/A</Text>
             )}
-            {isPositiveNumber(movie?.revenue) && (
-              <MovieInfo
-                label="Revenue"
-                value={formatCurrency(movie.revenue)}
-              />
-            )}
-          </View>
-
-          {/* Production Companies */}
-          <Text style={styles.productionLabel}>
-            Production Companies
-          </Text>
-          <View style={styles.companiesList}>
-            {movie?.production_companies?.map((c: any) => (
-              <View
-                key={c.id}
-                style={styles.companyItem}
-              >
-                {c.logo_path ? (
-                  <View style={styles.logoWrapper}>
-                    <Image
-                      source={{
-                        uri: `https://image.tmdb.org/t/p/w92${c.logo_path}`,
-                      }}
-                      style={styles.companyLogo}
-                      contentFit="contain"
-                    />
-                  </View>
-                ) : (
-                  <View style={styles.placeholderLogo}>
-                    <Text style={styles.placeholderName}>{c.name}</Text>
-                  </View>
-                )}
-                {c.logo_path && (
-                  <Text style={styles.companyName}>
-                    {c.name}
-                  </Text>
-                )}
-              </View>
-            ))}
           </View>
         </View>
       </ScrollView>
-
-      {/* Floating Back Button */}
-      <TouchableOpacity
-        style={styles.floatingBackButton}
-        onPress={router.back}
-      >
-        <Image
-          source={icons.arrow}
-          style={styles.backButtonIcon}
-          tintColor="#fff"
-          contentFit="contain"
-        />
-        <Text style={styles.backButtonText}>Go Back</Text>
-      </TouchableOpacity>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  loadingContainer: {
+  centeredState: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: COLORS.primary,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.primary,
+    justifyContent: "center",
     paddingHorizontal: 24,
   },
-  errorText: {
-    color: "#FFFFFF",
+  stateTitle: {
+    color: COLORS.text,
+    fontSize: 20,
+    fontFamily: TYPOGRAPHY.title,
     textAlign: "center",
-    fontSize: 16,
-    marginBottom: 24,
   },
-  retryButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+  stateBody: {
+    marginTop: 10,
+    color: COLORS.textMuted,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  primaryButton: {
+    marginTop: 16,
     backgroundColor: COLORS.accent,
-    borderRadius: 8,
+    borderRadius: 14,
+    paddingHorizontal: 22,
+    paddingVertical: 12,
   },
-  retryText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
+  primaryButtonText: {
+    color: COLORS.primary,
+    fontFamily: TYPOGRAPHY.title,
   },
   scrollContent: {
-    paddingBottom: 120,
+    paddingBottom: 46,
   },
-  posterContainer: {
+  heroWrap: {
     position: "relative",
   },
-  heroPoster: {
+  heroImage: {
     width: "100%",
-    height: 450,
+    height: 460,
+  },
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  heroBack: {
+    position: "absolute",
+    top: 14,
+    left: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(7, 11, 20, 0.72)",
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: "center",
+    justifyContent: "center",
   },
   playButton: {
     position: "absolute",
-    bottom: 24,
-    right: 24,
-    backgroundColor: "#FFFFFF",
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: "center",
+    right: 20,
+    bottom: 36,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: COLORS.accent,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    justifyContent: "center",
   },
   playIcon: {
-    width: 24,
-    height: 28,
-    marginLeft: 4,
+    width: 22,
+    height: 24,
+    marginLeft: 2,
   },
-  cardContainer: {
-    backgroundColor: COLORS.card,
-    borderRadius: 24,
-    padding: 24,
-    marginTop: -32,
+  card: {
+    marginTop: -28,
     marginHorizontal: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 15,
-    elevation: 20,
+    borderRadius: 22,
+    padding: 18,
+    backgroundColor: COLORS.card,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
-  headerRow: {
+  titleRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 8,
+    justifyContent: "space-between",
   },
-  movieTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#FFFFFF",
+  title: {
     flex: 1,
-    marginRight: 16,
+    color: COLORS.text,
+    fontFamily: TYPOGRAPHY.title,
+    fontSize: 26,
+    marginRight: 10,
   },
   favoriteButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   tagline: {
-    color: "#D1D5DB",
-    fontSize: 16,
+    marginTop: 8,
+    color: COLORS.textGray,
     fontStyle: "italic",
-    fontWeight: "500",
-    marginBottom: 16,
   },
   metaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  metaText: {
-    color: "#9CA3AF",
-    fontSize: 14,
-  },
-  metaDot: {
-    color: "#9CA3AF",
-    marginHorizontal: 8,
-  },
-  ratingBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    alignSelf: "flex-start",
-    marginBottom: 24,
-  },
-  starIcon: {
-    width: 16,
-    height: 16,
-    marginRight: 6,
-  },
-  ratingText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    fontSize: 15,
-  },
-  voteCount: {
-    color: "#9CA3AF",
-    fontSize: 13,
-    marginLeft: 6,
-  },
-  infoRow: {
-    marginTop: 20,
-  },
-  infoLabel: {
-    color: "#9CA3AF",
-    fontSize: 14,
-    fontWeight: "500",
-    marginBottom: 6,
-  },
-  infoValue: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  financialRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  productionLabel: {
-    color: "#9CA3AF",
-    fontSize: 14,
-    fontWeight: "500",
-    marginTop: 24,
-    marginBottom: 12,
-  },
-  companiesList: {
+    marginTop: 14,
     flexDirection: "row",
     flexWrap: "wrap",
+    gap: 10,
+  },
+  metaText: {
+    color: COLORS.textMuted,
+    fontSize: 12,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  infoBlock: {
+    marginTop: 16,
+  },
+  infoLabel: {
+    color: COLORS.textMuted,
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  infoValue: {
+    color: COLORS.text,
+    lineHeight: 22,
+  },
+  doubleInfoRow: {
+    flexDirection: "row",
     gap: 16,
+    justifyContent: "space-between",
   },
-  companyItem: {
+  sectionLabel: {
+    marginTop: 18,
+    color: COLORS.text,
+    fontFamily: TYPOGRAPHY.title,
+    fontSize: 14,
+  },
+  companyList: {
+    marginTop: 10,
     flexDirection: "row",
-    alignItems: "center",
-    maxWidth: 150,
+    flexWrap: "wrap",
+    gap: 8,
   },
-  logoWrapper: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 8,
-    padding: 4,
-    marginRight: 8,
+  companyTag: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: "rgba(255,255,255,0.04)",
   },
-  companyLogo: {
-    width: 36,
-    height: 36,
-  },
-  placeholderLogo: {
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  placeholderName: {
-    color: "#FFFFFF",
+  companyTagText: {
+    color: COLORS.textGray,
     fontSize: 12,
-  },
-  companyName: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    flexShrink: 1,
-  },
-  floatingBackButton: {
-    position: "absolute",
-    bottom: 24,
-    left: 24,
-    right: 24,
-    backgroundColor: COLORS.accent,
-    borderRadius: 16,
-    paddingVertical: 16,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  backButtonIcon: {
-    width: 20,
-    height: 20,
-    marginRight: 12,
-    transform: [{ rotate: "180deg" }],
-  },
-  backButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    fontSize: 16,
   },
 });
-
-export default Details;

@@ -15,7 +15,7 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { COLORS, COMMON_STYLES } from "@/constants/Styles";
+import { COLORS, COMMON_STYLES, TYPOGRAPHY } from "@/constants/Styles";
 
 import { icons } from "@/constants/icons";
 import { queryKeys } from "@/constants/queryKeys";
@@ -223,7 +223,7 @@ export default function Movies() {
           renderItem={({ item, index }: { item: any, index: number }) => (
             <View
               style={{
-                flex: 1 / 3,
+                flex: 1,
                 marginBottom: 12,
                 marginRight: index % 3 !== 2 ? 8 : 0,
               }}
@@ -258,11 +258,13 @@ export default function Movies() {
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 24,
-    paddingTop: 6,
-    height: 120,
-    backgroundColor: 'rgba(13, 13, 26, 0.9)',
+    // paddingTop: 6,
+    height: 115,
+    backgroundColor: 'rgba(8, 13, 23, 0.94)',
     zIndex: 10,
     justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   headerTop: {
     flexDirection: 'row',
@@ -280,17 +282,19 @@ const styles = StyleSheet.create({
     height: 40,
   },
   logoText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontSize: 22,
+    fontFamily: TYPOGRAPHY.title,
+    color: COLORS.text,
   },
   searchButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(171, 139, 255, 0.2)',
+    backgroundColor: 'rgba(103, 214, 255, 0.16)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   searchIcon: {
     width: 20,
@@ -300,10 +304,12 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   filterContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: COLORS.card,
     padding: 4,
     borderRadius: 12,
     alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   filterRow: {
     flexDirection: 'row',
@@ -318,8 +324,8 @@ const styles = StyleSheet.create({
   },
   filterTabText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontFamily: TYPOGRAPHY.title,
+    color: COLORS.text,
   },
   loadingContainer: {
     flex: 1,
@@ -327,7 +333,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#FFFFFF',
+    color: COLORS.textGray,
     marginTop: 16,
   },
   errorContainer: {
@@ -337,37 +343,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   errorBox: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    backgroundColor: 'rgba(255, 111, 97, 0.12)',
     padding: 24,
     borderRadius: 16,
     alignItems: 'center',
     width: '100%',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 111, 97, 0.25)',
   },
   errorTitle: {
-    color: '#FFFFFF',
+    color: COLORS.text,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: TYPOGRAPHY.title,
     marginBottom: 8,
   },
   errorBody: {
-    color: '#9CA3AF',
+    color: COLORS.textMuted,
     textAlign: 'center',
   },
   retryButton: {
-    backgroundColor: 'rgba(171, 139, 255, 0.2)',
+    backgroundColor: 'rgba(103, 214, 255, 0.16)',
     borderRadius: 12,
     paddingHorizontal: 24,
     paddingVertical: 12,
     marginTop: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   retryText: {
     color: COLORS.accent,
     fontWeight: '600',
   },
   card: {
-    backgroundColor: "#222",
-    borderRadius: 10,
+    backgroundColor: COLORS.cardLight,
+    borderRadius: 12,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   image: {
     width: "100%",
@@ -375,7 +387,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingTop: 8,
-    paddingBottom: 50,
+    paddingBottom: 86,
     paddingHorizontal: CARD_MARGIN,
   },
 });

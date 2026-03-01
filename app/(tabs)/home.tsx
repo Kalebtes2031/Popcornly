@@ -62,7 +62,8 @@ const zoomOut = {
   },
 };
 
-import { COLORS, COMMON_STYLES } from "@/constants/Styles";
+import { COLORS, COMMON_STYLES, TYPOGRAPHY } from "@/constants/Styles";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 // Skeleton Components
 const SkeletonLoader = () => {
@@ -125,60 +126,63 @@ const SkeletonCategoryGrid = () => {
 
 const HomePageSkeleton = () => {
   return (
-    <LinearGradient
-      colors={[COLORS.gradientStart, COLORS.gradientMid, COLORS.gradientEnd]}
-      style={COMMON_STYLES.container}
-    >
-      <StatusBar style="light" />
+    <SafeAreaProvider>
+      <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
+        <LinearGradient
+          colors={[COLORS.gradientStart, COLORS.gradientMid, COLORS.gradientEnd]}
+          style={COMMON_STYLES.container}
+        >
+          <StatusBar style="light" />
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 30 }}
+          >
+            {/* Trending Section Skeleton */}
+            <View style={skeletonStyles.trendingSection}>
+              <SkeletonHeaderLoader />
+              <SkeletonTrendingCarousel />
+            </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 30 }}
-      >
-        {/* Trending Section Skeleton */}
-        <View style={skeletonStyles.trendingSection}>
-          <SkeletonHeaderLoader />
-          <SkeletonTrendingCarousel />
-        </View>
+            {/* Latest Movies Skeleton */}
+            <View style={skeletonStyles.sectionMargin}>
+              <View style={skeletonStyles.headerRow}>
+                <View style={skeletonStyles.sectionTitle} />
+                <View style={skeletonStyles.sectionLink} />
+              </View>
+              <FlashList
+                horizontal
+                estimatedItemSize={160}
+                showsHorizontalScrollIndicator={false}
+                data={[1, 2, 3, 4, 5, 6]}
+                keyExtractor={(item) => `skeleton-movie-${item}`}
+                renderItem={() => <SkeletonLoader />}
+                contentContainerStyle={{ paddingHorizontal: 20 }}
+              />
+            </View>
 
-        {/* Latest Movies Skeleton */}
-        <View style={skeletonStyles.sectionMargin}>
-          <View style={skeletonStyles.headerRow}>
-            <View style={skeletonStyles.sectionTitle} />
-            <View style={skeletonStyles.sectionLink} />
-          </View>
-          <FlashList
-            horizontal
-            estimatedItemSize={160}
-            showsHorizontalScrollIndicator={false}
-            data={[1, 2, 3, 4, 5, 6]}
-            keyExtractor={(item) => `skeleton-movie-${item}`}
-            renderItem={() => <SkeletonLoader />}
-            contentContainerStyle={{ paddingHorizontal: 20 }}
-          />
-        </View>
+            {/* Latest TV Shows Skeleton */}
+            <View style={skeletonStyles.sectionMargin}>
+              <View style={skeletonStyles.headerRow}>
+                <View style={skeletonStyles.sectionTitle} />
+                <View style={skeletonStyles.sectionLink} />
+              </View>
+              <FlashList
+                horizontal
+                estimatedItemSize={160}
+                showsHorizontalScrollIndicator={false}
+                data={[1, 2, 3, 4, 5, 6]}
+                keyExtractor={(item) => `skeleton-tv-${item}`}
+                renderItem={() => <SkeletonLoader />}
+                contentContainerStyle={{ paddingHorizontal: 20 }}
+              />
+            </View>
 
-        {/* Latest TV Shows Skeleton */}
-        <View style={skeletonStyles.sectionMargin}>
-          <View style={skeletonStyles.headerRow}>
-            <View style={skeletonStyles.sectionTitle} />
-            <View style={skeletonStyles.sectionLink} />
-          </View>
-          <FlashList
-            horizontal
-            estimatedItemSize={160}
-            showsHorizontalScrollIndicator={false}
-            data={[1, 2, 3, 4, 5, 6]}
-            keyExtractor={(item) => `skeleton-tv-${item}`}
-            renderItem={() => <SkeletonLoader />}
-            contentContainerStyle={{ paddingHorizontal: 20 }}
-          />
-        </View>
-
-        {/* Categories Skeleton */}
-        <SkeletonCategoryGrid />
-      </ScrollView>
-    </LinearGradient>
+            {/* Categories Skeleton */}
+            <SkeletonCategoryGrid />
+          </ScrollView>
+        </LinearGradient>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 
@@ -266,7 +270,7 @@ const skeletonStyles = StyleSheet.create({
     borderRadius: 4,
   },
   trendingSection: {
-    marginTop: 24,
+    marginTop: 14,
   },
   sectionMargin: {
     marginBottom: 40,
@@ -559,7 +563,7 @@ export default function Home() {
             <View style={styles.trendingSection}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>
-                  Trending Now
+                  Trending Nows
                 </Text>
                 <View style={styles.toggleContainer}>
                   <TouchableOpacity
@@ -709,12 +713,14 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 10,
-    backgroundColor: 'rgba(13, 13, 26, 0.9)',
+    backgroundColor: 'rgba(8, 13, 23, 0.94)',
     paddingHorizontal: 24,
     height: 64,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   logoContainer: {
     flexDirection: 'row',
@@ -726,17 +732,19 @@ const styles = StyleSheet.create({
     height: 40,
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontFamily: TYPOGRAPHY.title,
     color: COLORS.text,
   },
   searchButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(171, 139, 255, 0.2)',
+    backgroundColor: 'rgba(103, 214, 255, 0.16)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   searchIcon: {
     width: 20,
@@ -754,15 +762,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   errorBox: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    backgroundColor: 'rgba(255, 111, 97, 0.12)',
     padding: 24,
     borderRadius: 16,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 111, 97, 0.25)',
   },
   errorTitle: {
     color: COLORS.text,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: TYPOGRAPHY.title,
     marginBottom: 8,
   },
   errorText: {
@@ -770,11 +780,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   retryButton: {
-    backgroundColor: 'rgba(171, 139, 255, 0.2)',
+    backgroundColor: 'rgba(103, 214, 255, 0.16)',
     borderRadius: 12,
     paddingHorizontal: 24,
     paddingVertical: 12,
     marginTop: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   retryText: {
     color: COLORS.accent,
@@ -787,31 +799,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 10,
   },
   sectionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontFamily: TYPOGRAPHY.title,
     color: COLORS.text,
   },
   toggleContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: COLORS.card,
     borderRadius: 12,
-    padding: 4,
+    padding: 3,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   toggleButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 8,
   },
   toggleButtonActive: {
     backgroundColor: COLORS.accent,
   },
   toggleText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#9CA3AF',
+    fontSize: 12,
+    fontFamily: TYPOGRAPHY.title,
+    color: COLORS.textMuted,
   },
   toggleTextActive: {
     color: COLORS.text,
@@ -847,12 +861,14 @@ const styles = StyleSheet.create({
   },
   categoryItem: {
     width: '30%',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: COLORS.card,
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   categoryIconCircle: {
     width: 48,

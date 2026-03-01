@@ -9,6 +9,7 @@ export const COLORS = {
     accentSecondary: "#67D6FF",
     background: "#0B1322",
     card: "rgba(17, 28, 46, 0.78)",
+    togglecard: "rgba(44, 49, 58, 0.78)",
     cardLight: "rgba(28, 41, 66, 0.92)",
     border: "rgba(255, 255, 255, 0.08)",
     text: "#F6F8FF",

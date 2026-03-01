@@ -6,7 +6,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
-import { COLORS, COMMON_STYLES } from "@/constants/Styles";
+import { COLORS, TYPOGRAPHY } from "@/constants/Styles";
 import { StyleSheet } from "react-native";
 
 export default function Profile() {
@@ -156,6 +156,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   headerContent: {
     alignItems: "center",
@@ -177,9 +179,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   username: {
-    color: "#FFFFFF",
+    color: COLORS.text,
     fontSize: 24,
-    fontWeight: "bold",
+    fontFamily: TYPOGRAPHY.title,
     marginBottom: 4,
   },
   email: {
@@ -190,10 +192,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: "rgba(103, 214, 255, 0.16)",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   editButtonText: {
     color: "#FFFFFF",
@@ -206,6 +210,8 @@ const styles = StyleSheet.create({
     marginTop: -24,
     backgroundColor: COLORS.card,
     borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     paddingVertical: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -218,7 +224,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontFamily: TYPOGRAPHY.title,
     color: COLORS.text,
   },
   statLabel: {
@@ -232,7 +238,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: TYPOGRAPHY.title,
     color: COLORS.text,
     marginBottom: 16,
   },
@@ -240,6 +246,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.card,
     borderRadius: 16,
     padding: 20,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   infoRow: {
     flexDirection: "row",
@@ -276,6 +284,8 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   actionIconContainer: {
     padding: 10,

@@ -1,50 +1,144 @@
-# Welcome to your Expo app 👋
+﻿# Popcornly
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Popcornly is a fullstack mobile movie discovery app built with Expo + React Native.
+It combines TMDB content APIs with Firebase Auth + Firestore to deliver:
 
-## Get started
+1. Movie and TV browsing
+2. Global search across movie and TV
+3. Save-to-favorites per user account
+4. Trending content powered by Firestore search metrics
+
+## Tech Stack
+
+1. Frontend: Expo, React Native, Expo Router, TypeScript
+2. Data Fetching: TanStack React Query
+3. Backend Services: Firebase Auth + Firestore
+4. External API: TMDB (The Movie Database)
+5. Lists/Media: FlashList, expo-image
+6. Validation/Config: Zod-based env parsing
+
+## App Features
+
+1. Authentication
+2. Home (trending + latest rails)
+3. Movies tab (trending/latest + infinite pagination)
+4. TV Shows tab (trending/latest + infinite pagination)
+5. Search (debounced, unified movie + TV)
+6. Details pages (movie + tv)
+7. Saved favorites per user
+8. Profile and account actions
+
+## Screenshots
+
+Replace these placeholders with your own screenshots.
+
+```md
+![Home](./docs/screenshots/home.jpg)
+![Movies](./docs/screenshots/movies.jpg)
+![TV Shows](./docs/screenshots/tvshows.jpg)
+![Search](./docs/screenshots/search.jpg)
+![Movie Details](./docs/screenshots/movie-details.jpg)
+![TV Details](./docs/screenshots/tv-details.jpg)
+![Saved](./docs/screenshots/saved.jpg)
+![Profile](./docs/screenshots/profile.jpg)
+![Auth](./docs/screenshots/auth.jpg)
+```
+
+## Architecture
+
+High-level flow:
+
+1. Client app (Expo/React Native) handles UI and routing
+2. React Query handles caching and async state
+3. Firebase Auth handles identity (email/password + Google)
+4. Firestore stores `users`, `favorites`, `metrics`, and `tvMetrics`
+5. TMDB provides movie and TV metadata
+
+See [Architecture Notes](./docs/ARCHITECTURE.md).
+
+## Getting Started
 
 1. Install dependencies
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Copy env template
 
-## Learn more
+```bash
+copy .env.example .env
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+3. Fill `.env` with your real credentials
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+4. Run app
 
-## Join the community
+```bash
+npx expo start
+```
 
-Join our community of developers creating universal apps.
+Useful commands:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm run lint
+npx tsc --noEmit
+npm run android
+npm run ios
+```
+
+## Environment Variables
+
+Use `.env.example` as the reference for required variables.
+
+Never commit real secrets.
+
+## Firestore Setup
+
+Starter backend files added:
+
+1. `firestore.rules`
+2. `firestore.indexes.json`
+3. `firebase.json`
+
+Deploy after review:
+
+```bash
+firebase deploy --only firestore:rules
+firebase deploy --only firestore:indexes
+```
+
+## Production Readiness (In Progress)
+
+Track progress in:
+
+1. [Portfolio Checklist](./docs/PORTFOLIO_CHECKLIST.md)
+2. [Architecture Notes](./docs/ARCHITECTURE.md)
+3. [Security Notes](./docs/SECURITY.md)
+
+## Folder Structure
+
+```text
+app/              # expo-router pages/routes
+components/       # reusable UI components
+constants/        # styles, assets maps, query keys
+contexts/         # auth and favorites contexts
+services/         # TMDB + Firestore service layer
+config/           # env parsing and config
+types/            # TypeScript models
+scripts/          # project scripts
+docs/             # architecture, security, portfolio docs
+```
+
+## Portfolio Notes
+
+This project demonstrates:
+
+1. Fullstack integration with Firebase and TMDB
+2. Real-time user data (favorites + metrics)
+3. Typed service layer + env validation
+4. Mobile-first UX with modern navigation and list performance
+
+## License
+
+Personal portfolio project.

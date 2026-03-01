@@ -92,9 +92,9 @@ const SignupScreen = () => {
           <Text style={styles.title}>
             Create Account
           </Text>
-          <Text style={styles.subtitle}>
+          {/* <Text style={styles.subtitle}>
             Join our community today
-          </Text>
+          </Text> */}
         </View>
 
         <View style={styles.formContainer}>

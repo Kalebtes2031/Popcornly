@@ -3,7 +3,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 import * as SplashScreen from "expo-splash-screen";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import Toast from "react-native-toast-message";
@@ -48,10 +48,10 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <View
+      <SafeAreaView
         style={[
           styles.container,
-          { backgroundColor: isDark ? COLORS.primary : "#fff" },
+          { backgroundColor: isDark ? COLORS.background : COLORS.background },
         ]}
       >
         <AuthProvider>
@@ -76,7 +76,7 @@ export default function RootLayout() {
             </QueryClientProvider>
           </FavoritesProvider>
         </AuthProvider>
-      </View>
+      </SafeAreaView>
     </SafeAreaProvider>
   );
 }

@@ -5,6 +5,7 @@ import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { images } from "@/constants/images";
 import { icons } from "@/constants/icons";
+import { COLORS, TYPOGRAPHY } from "@/constants/Styles";
 
 const TabIcon = ({ focused, icon, title, ionicon }: any) => {
   if (focused) {
@@ -12,16 +13,19 @@ const TabIcon = ({ focused, icon, title, ionicon }: any) => {
       <ImageBackground
         source={images.bottomtabbg}
         style={styles.activeTabContainer}
+        imageStyle={styles.activeBackgroundImage}
       >
         <View style={styles.activeIconWrapper}>
           {ionicon ? (
-            <Ionicons name={ionicon} size={20} color="#151312" />
+            <Ionicons name={ionicon} size={22} color={COLORS.primary} />
           ) : (
-            <Image source={icon} tintColor="#151312" style={styles.iconSize} />
+            <Image
+              source={icon}
+              tintColor={COLORS.primary}
+              style={styles.activeIconSize}
+            />
           )}
-          <Text style={styles.activeTabText}>
-            {title}
-          </Text>
+          <Text style={styles.activeTabText}>{title}</Text>
         </View>
       </ImageBackground>
     );
@@ -30,72 +34,33 @@ const TabIcon = ({ focused, icon, title, ionicon }: any) => {
   return (
     <View style={styles.inactiveTabContainer}>
       {ionicon ? (
-        <Ionicons name={ionicon} size={20} color="#A8B5DB" />
+        <Ionicons name={ionicon} size={22} color={COLORS.textMuted} />
       ) : (
-        <Image source={icon} tintColor="#A8B5DB" style={styles.iconSize} />
+        <Image
+          source={icon}
+          tintColor={COLORS.textMuted}
+          style={styles.inactiveIconSize}
+        />
       )}
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  activeTabContainer: {
-    width: 85,
-    minHeight: 64,
-    marginTop: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 32,
-    overflow: "hidden",
-  },
-  activeIconWrapper: {
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  iconSize: {
-    width: 20,
-    height: 20,
-  },
-  activeTabText: {
-    color: "#151312",
-    fontSize: 16,
-    fontWeight: "600",
-    marginTop: 2,
-  },
-  inactiveTabContainer: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 16,
-    borderRadius: 32,
-  },
-});
+
+
+const DEV_TABS_KEY = __DEV__
+  ? `tabs-dev-${Math.random().toString(36).slice(2)}`
+  : "tabs-prod";
+
 
 const _Layout = () => {
   return (
     <Tabs
+    //  key={DEV_TABS_KEY}
       screenOptions={{
         tabBarShowLabel: false,
-        tabBarItemStyle: {
-          width: "100%",
-          height: "100%",
-          justifyContent: "center",
-          alignItems: "center",
-        },
-        tabBarStyle: {
-          backgroundColor: "#030014",
-          borderRadius: 56,
-          // marginHorizontal: 10,
-          // marginBottom: 6,
-          height: 52,
-          position: "absolute",
-          // bottom: 13,
-          overflow: "hidden",
-          borderWidth: 1,
-          borderColor: "#030014",
-        },
+        tabBarItemStyle: styles.tabBarItem,
+        tabBarStyle: styles.tabBar,
       }}
     >
       <Tabs.Screen
@@ -108,14 +73,6 @@ const _Layout = () => {
           ),
         }}
       />
-      {/* <Tabs.Screen
-        name="search"
-        options={{
-          headerShown: false,
-          title: "Search",
-          tabBarItemStyle: { display: "none" },
-        }}
-      /> */}
       <Tabs.Screen
         name="movies"
         options={{
@@ -161,3 +118,85 @@ const _Layout = () => {
 };
 
 export default _Layout;
+
+const styles = StyleSheet.create({
+  // Tab bar – sleek, elevated with subtle blur effect
+  tabBar: {
+    backgroundColor: "rgba(18, 25, 35, 0.85)",
+    borderRadius: 136,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    paddingHorizontal: 12,
+    height: 54,               // slightly taller for better proportion
+    position: "absolute",
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 12,
+  },
+  // Each tab item fills the tab bar evenly
+  tabBarItem: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  // Active pill container – exactly sized for content + comfortable padding
+  activeTabContainer: {
+    width: 80,               // wide enough for short labels
+    height: 46,               // pill height – nicely fits inside tab bar
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 100,        // fully rounded
+    overflow: "hidden",
+    marginTop:15,
+    // subtle scale gives a slight pop effect (optional, can be removed)
+    transform: [{ scale: 1.02 }],
+    // extra shadow for depth
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  activeBackgroundImage: {
+    resizeMode: "cover",
+    // optional tint to blend with background
+    tintColor: "#57CC99",
+  },
+  activeIconWrapper: {
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12,
+    paddingTop: 6,
+  },
+  activeIconSize: {
+    width: 22,
+    height: 22,
+  },
+  activeTabText: {
+    color: COLORS.primary,
+    fontSize: 10,
+    fontFamily: TYPOGRAPHY.title,
+    fontWeight: "600",
+    // marginTop: 4,
+    letterSpacing: 0.2,
+  },
+  // Inactive tab – just the icon, perfectly centered
+  inactiveTabContainer: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    opacity: 0.7,
+  },
+  inactiveIconSize: {
+    width: 22,
+    height: 22,
+  },
+});
