@@ -30,19 +30,33 @@ It combines TMDB content APIs with Firebase Auth + Firestore to deliver:
 
 ## Screenshots
 
-Replace these placeholders with your own screenshots.
+### Home
+![Home](./docs/screenshots/home.png)
 
-```md
-![Home](./docs/screenshots/home.jpg)
-![Movies](./docs/screenshots/movies.jpg)
-![TV Shows](./docs/screenshots/tvshows.jpg)
-![Search](./docs/screenshots/search.jpg)
-![Movie Details](./docs/screenshots/movie-details.jpg)
-![TV Details](./docs/screenshots/tv-details.jpg)
-![Saved](./docs/screenshots/saved.jpg)
-![Profile](./docs/screenshots/profile.jpg)
-![Auth](./docs/screenshots/auth.jpg)
-```
+### Movies
+![Movies](./docs/screenshots/movies.png)
+
+### TV Shows
+![TV Shows](./docs/screenshots/tvshows.png)
+
+### Search
+![Search](./docs/screenshots/search.png)
+
+### Movie Details
+![Movie Details](./docs/screenshots/movie-details.png)
+
+### TV Details
+![TV Details](./docs/screenshots/tv-details.png)
+
+### Saved
+![Saved](./docs/screenshots/saved.png)
+
+### Profile
+![Profile](./docs/screenshots/profile.png)
+
+### Auth
+![Auth](./docs/screenshots/auth.png)
+
 
 ## Architecture
 
