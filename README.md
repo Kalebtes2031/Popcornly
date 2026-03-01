@@ -30,33 +30,19 @@ It combines TMDB content APIs with Firebase Auth + Firestore to deliver:
 
 ## Screenshots
 
-### Home
-![Home](docs/screenshots/home.jpg)
+<div align="center" style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;">
 
-### Movies
-![Movies](./docs/screenshots/movies.jpg)
+  <img src="./docs/screenshots/home.jpg" height="450" alt="Home" />
+  <img src="./docs/screenshots/movies.jpg" height="450" alt="Movies" />
+  <img src="./docs/screenshots/tvshows.jpg" height="450" alt="TV Shows" />
+  <img src="./docs/screenshots/search.jpg" height="450" alt="Search" />
+  <img src="./docs/screenshots/movie-details.jpg" height="450" alt="Movie Details" />
+  <img src="./docs/screenshots/tv-details.jpg" height="450" alt="TV Details" />
+  <img src="./docs/screenshots/saved.jpg" height="450" alt="Saved" />
+  <img src="./docs/screenshots/profile.jpg" height="450" alt="Profile" />
+  <img src="./docs/screenshots/auth.jpg" height="450" alt="Auth" />
 
-### TV Shows
-![TV Shows](./docs/screenshots/tvshows.jpg)
-
-### Search
-![Search](./docs/screenshots/search.jpg)
-
-### Movie Details
-![Movie Details](./docs/screenshots/movie-details.jpg)
-
-### TV Details
-![TV Details](./docs/screenshots/tv-details.jpg)
-
-### Saved
-![Saved](./docs/screenshots/saved.jpg)
-
-### Profile
-![Profile](./docs/screenshots/profile.jpg)
-
-### Auth
-![Auth](./docs/screenshots/auth.jpg)
-
+</div>
 
 ## Architecture
 
