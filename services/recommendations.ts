@@ -17,6 +17,13 @@ type RecommendationPayload = {
   country?: string;
 };
 
+const readPublicEnv = (key: keyof typeof ENV): string => {
+  const runtimeValue = process.env[key];
+  if (typeof runtimeValue === "string") return runtimeValue;
+  const staticValue = ENV[key];
+  return typeof staticValue === "string" ? staticValue : "";
+};
+
 const normalizeMediaType = (value: unknown): "movie" | "tv" | "any" => {
   if (value === "movie" || value === "tv" || value === "any") return value;
   return "any";
@@ -62,9 +69,9 @@ const extractOutputText = (data: any): string => {
 export const fetchAIRecommendations = async (
   payload: RecommendationPayload
 ): Promise<AIRecommendation[]> => {
-  const endpoint = ENV.EXPO_PUBLIC_RECOMMENDER_ENDPOINT;
-  const enableClientDemoMode = ENV.EXPO_PUBLIC_ENABLE_CLIENT_AI_DEMO === "true";
-  const clientDemoApiKey = ENV.EXPO_PUBLIC_OPENAI_API_KEY;
+  const endpoint = readPublicEnv("EXPO_PUBLIC_RECOMMENDER_ENDPOINT");
+  const enableClientDemoMode = readPublicEnv("EXPO_PUBLIC_ENABLE_CLIENT_AI_DEMO") === "true";
+  const clientDemoApiKey = readPublicEnv("EXPO_PUBLIC_OPENAI_API_KEY");
 
   if (!endpoint) {
     if (!enableClientDemoMode || !clientDemoApiKey) return [];
