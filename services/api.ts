@@ -13,6 +13,32 @@ export const TMDB_CONFIG = {
 
 const asArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
 
+export type TMDBVideo = {
+  id: string;
+  key: string;
+  site: string;
+  type: string;
+  official?: boolean;
+  published_at?: string;
+};
+
+export type TMDBWatchProvider = {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string | null;
+  display_priority?: number;
+};
+
+export type TMDBWatchProvidersByCountry = Record<
+  string,
+  {
+    link?: string;
+    flatrate?: TMDBWatchProvider[];
+    rent?: TMDBWatchProvider[];
+    buy?: TMDBWatchProvider[];
+  }
+>;
+
 export type ContentItem = {
   id: number;
   title: string;               // movie.title OR tv.name
@@ -98,6 +124,64 @@ export const fetchTVDetails = async (tvId: string): Promise<any> => {
   if (!response.ok) throw new Error(`Failed to fetch TV details: ${response.statusText}`);
   return await response.json();
 };
+
+const selectBestTrailerKey = (videos: TMDBVideo[]): string | null => {
+  if (!videos.length) return null;
+
+  const youtubeVideos = videos.filter((video) => video.site === "YouTube" && Boolean(video.key));
+  if (!youtubeVideos.length) return null;
+
+  const trailerCandidates = youtubeVideos.filter((video) => video.type === "Trailer");
+  const pool = trailerCandidates.length ? trailerCandidates : youtubeVideos;
+
+  const official = pool.find((video) => video.official);
+  if (official) return official.key;
+
+  return pool[0]?.key ?? null;
+};
+
+const fetchTrailerKey = async (mediaType: "movie" | "tv", id: string): Promise<string | null> => {
+  const response = await fetch(
+    `${TMDB_CONFIG.BASE_URL}/${mediaType}/${id}/videos?api_key=${TMDB_CONFIG.API_KEY}`,
+    { method: "GET", headers: TMDB_CONFIG.headers }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${mediaType} trailer: ${response.statusText}`);
+  }
+
+  const data: { results?: TMDBVideo[] } = await response.json();
+  return selectBestTrailerKey(asArray<TMDBVideo>(data?.results));
+};
+
+export const fetchMovieTrailerKey = async (movieId: string): Promise<string | null> =>
+  fetchTrailerKey("movie", movieId);
+
+export const fetchTVTrailerKey = async (tvId: string): Promise<string | null> =>
+  fetchTrailerKey("tv", tvId);
+
+const fetchWatchProviders = async (
+  mediaType: "movie" | "tv",
+  id: string
+): Promise<TMDBWatchProvidersByCountry> => {
+  const response = await fetch(
+    `${TMDB_CONFIG.BASE_URL}/${mediaType}/${id}/watch/providers?api_key=${TMDB_CONFIG.API_KEY}`,
+    { method: "GET", headers: TMDB_CONFIG.headers }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${mediaType} watch providers: ${response.statusText}`);
+  }
+
+  const data: { results?: TMDBWatchProvidersByCountry } = await response.json();
+  return (data?.results ?? {}) as TMDBWatchProvidersByCountry;
+};
+
+export const fetchMovieWatchProviders = async (movieId: string): Promise<TMDBWatchProvidersByCountry> =>
+  fetchWatchProviders("movie", movieId);
+
+export const fetchTVWatchProviders = async (tvId: string): Promise<TMDBWatchProvidersByCountry> =>
+  fetchWatchProviders("tv", tvId);
 
 
 // Fetch detailed info for genres

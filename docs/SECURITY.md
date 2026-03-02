@@ -44,3 +44,4 @@ service cloud.firestore {
 1. Add explicit schema checks in rules (`hasOnly`, expected fields/types)
 2. Add App Check for abuse mitigation
 3. Add rate limiting strategy via backend function if metrics gets abused
+4. Keep OpenAI key only in Firebase Functions secrets (`OPENAI_API_KEY`)

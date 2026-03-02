@@ -1,8 +1,9 @@
-﻿import React from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Linking,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,11 +15,16 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
+import { WebView } from "react-native-webview";
 
 import { COLORS, COMMON_STYLES, TYPOGRAPHY } from "@/constants/Styles";
-import { icons } from "@/constants/icons";
 import { queryKeys } from "@/constants/queryKeys";
-import { fetchTVDetails } from "@/services/api";
+import {
+  fetchTVDetails,
+  fetchTVTrailerKey,
+  fetchTVWatchProviders,
+  TMDBWatchProvider,
+} from "@/services/api";
 import { useFavorites } from "@/contexts/FavoritesContext";
 
 interface InfoRowProps {
@@ -38,10 +44,48 @@ const InfoRow = ({ label, value }: InfoRowProps) => (
   </View>
 );
 
+const ProviderSection = ({
+  title,
+  providers,
+}: {
+  title: string;
+  providers: TMDBWatchProvider[];
+}) => {
+  if (!providers.length) return null;
+
+  return (
+    <View style={styles.providerSection}>
+      <Text style={styles.providerSectionTitle}>{title}</Text>
+      <View style={styles.providerRow}>
+        {providers.map((provider) => (
+          <View key={`${title}-${provider.provider_id}`} style={styles.providerCard}>
+            <Image
+              source={{
+                uri: provider.logo_path
+                  ? `https://image.tmdb.org/t/p/w92${provider.logo_path}`
+                  : "https://placehold.co/92x92/0F172A/E2E8F0.png",
+              }}
+              style={styles.providerLogo}
+              contentFit="cover"
+            />
+            <Text style={styles.providerName} numberOfLines={2}>
+              {provider.provider_name}
+            </Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
 export default function TVDetails() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const tvId = Array.isArray(id) ? id[0] : id;
+
+  const [trailerVisible, setTrailerVisible] = useState(false);
+  const [trailerLoadFailed, setTrailerLoadFailed] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState("US");
 
   const {
     data: tv,
@@ -53,6 +97,29 @@ export default function TVDetails() {
     enabled: Boolean(tvId),
   });
 
+  const { data: trailerKey, isLoading: trailerLoading } = useQuery({
+    queryKey: queryKeys.tvTrailer(tvId ?? ""),
+    queryFn: () => fetchTVTrailerKey(String(tvId)),
+    enabled: Boolean(tvId),
+  });
+
+  const { data: watchProviders = {}, isLoading: providersLoading } = useQuery({
+    queryKey: queryKeys.tvWatchProviders(tvId ?? ""),
+    queryFn: () => fetchTVWatchProviders(String(tvId)),
+    enabled: Boolean(tvId),
+  });
+
+  const availableCountries = useMemo(() => Object.keys(watchProviders).sort(), [watchProviders]);
+
+  useEffect(() => {
+    if (!availableCountries.length) return;
+    if (!availableCountries.includes(selectedCountry)) {
+      setSelectedCountry(availableCountries[0]);
+    }
+  }, [availableCountries, selectedCountry]);
+
+  const selectedProviders = watchProviders[selectedCountry];
+
   const { favorites, isFavorite, addFavorite, removeFavorite } = useFavorites();
   const favorite = isFavorite(String(tvId), "tv");
 
@@ -63,9 +130,7 @@ export default function TVDetails() {
       const favoriteDoc = favorites.find(
         (item) => String(item.itemId) === String(tvId) && item.type === "tv"
       );
-      if (favoriteDoc) {
-        await removeFavorite(favoriteDoc.id);
-      }
+      if (favoriteDoc) await removeFavorite(favoriteDoc.id);
       return;
     }
 
@@ -77,19 +142,37 @@ export default function TVDetails() {
     });
   };
 
-  const openHomepage = async () => {
-    if (!tv?.homepage) {
-      Alert.alert("Trailer unavailable", "No homepage or trailer link was provided.");
+  const openTrailer = () => {
+    if (!trailerKey) {
+      Alert.alert("Trailer unavailable", "No trailer was found for this title.");
       return;
     }
+    setTrailerLoadFailed(false);
+    setTrailerVisible(true);
+  };
 
-    const canOpen = await Linking.canOpenURL(tv.homepage);
+  const openTrailerOnYoutube = async () => {
+    if (!trailerKey) return;
+    const url = `https://www.youtube.com/watch?v=${trailerKey}`;
+    const canOpen = await Linking.canOpenURL(url);
     if (!canOpen) {
-      Alert.alert("Unable to open", "The provided link cannot be opened on this device.");
+      Alert.alert("Cannot open trailer", "YouTube link is not available on this device.");
+      return;
+    }
+    await Linking.openURL(url);
+  };
+
+  const openProviderLink = async () => {
+    const link = selectedProviders?.link;
+    if (!link) return;
+
+    const canOpen = await Linking.canOpenURL(link);
+    if (!canOpen) {
+      Alert.alert("Cannot open link", "Provider link is not available on this device.");
       return;
     }
 
-    Linking.openURL(tv.homepage);
+    Linking.openURL(link);
   };
 
   if (!tvId) {
@@ -137,17 +220,18 @@ export default function TVDetails() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.heroWrap}>
           <Image source={{ uri: posterUri }} style={styles.heroImage} contentFit="cover" />
-          <LinearGradient
-            colors={["transparent", "rgba(7, 11, 20, 0.94)"]}
-            style={styles.heroOverlay}
-          />
+          <LinearGradient colors={["transparent", "rgba(7, 11, 20, 0.94)"]} style={styles.heroOverlay} />
 
           <TouchableOpacity style={styles.heroBack} onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={20} color={COLORS.text} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.playButton} onPress={openHomepage}>
-            <Image source={icons.play} style={styles.playIcon} contentFit="contain" />
+          <TouchableOpacity style={styles.playButton} onPress={openTrailer}>
+            {trailerLoading ? (
+              <ActivityIndicator size="small" color={COLORS.primary} />
+            ) : (
+              <Ionicons name="play" size={22} color={COLORS.primary} />
+            )}
           </TouchableOpacity>
         </View>
 
@@ -176,6 +260,48 @@ export default function TVDetails() {
           <InfoRow label="Overview" value={tv.overview || "N/A"} />
           <InfoRow label="Genres" value={genres} />
 
+          <Text style={styles.sectionLabel}>Where To Watch</Text>
+          {providersLoading ? (
+            <ActivityIndicator style={{ marginTop: 10 }} color={COLORS.accent} />
+          ) : availableCountries.length === 0 ? (
+            <Text style={styles.stateBody}>No provider data available.</Text>
+          ) : (
+            <>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.countryRow}>
+                {availableCountries.map((countryCode) => (
+                  <TouchableOpacity
+                    key={countryCode}
+                    onPress={() => setSelectedCountry(countryCode)}
+                    style={[
+                      styles.countryChip,
+                      selectedCountry === countryCode && styles.countryChipActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.countryChipText,
+                        selectedCountry === countryCode && styles.countryChipTextActive,
+                      ]}
+                    >
+                      {countryCode}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+              {selectedProviders?.link ? (
+                <TouchableOpacity onPress={openProviderLink} style={styles.providerLinkBtn}>
+                  <Text style={styles.providerLinkBtnText}>Open provider page</Text>
+                  <Ionicons name="open-outline" size={16} color={COLORS.primary} />
+                </TouchableOpacity>
+              ) : null}
+
+              <ProviderSection title="Stream" providers={selectedProviders?.flatrate ?? []} />
+              <ProviderSection title="Rent" providers={selectedProviders?.rent ?? []} />
+              <ProviderSection title="Buy" providers={selectedProviders?.buy ?? []} />
+            </>
+          )}
+
           <Text style={styles.sectionLabel}>Production Companies</Text>
           <View style={styles.companyList}>
             {Array.isArray(tv.production_companies) && tv.production_companies.length > 0 ? (
@@ -190,6 +316,45 @@ export default function TVDetails() {
           </View>
         </View>
       </ScrollView>
+
+      <Modal visible={trailerVisible} animationType="slide" onRequestClose={() => setTrailerVisible(false)}>
+        <View style={styles.trailerModalContainer}>
+          <View style={styles.trailerHeader}>
+            <Text style={styles.trailerTitle}>Trailer</Text>
+            <TouchableOpacity onPress={() => setTrailerVisible(false)}>
+              <Ionicons name="close" size={26} color={COLORS.text} />
+            </TouchableOpacity>
+          </View>
+          {trailerKey ? (
+            trailerLoadFailed ? (
+              <View style={styles.centeredState}>
+                <Text style={styles.stateBody}>
+                  Embedded playback is blocked for this trailer.
+                </Text>
+                <TouchableOpacity style={styles.primaryButton} onPress={openTrailerOnYoutube}>
+                  <Text style={styles.primaryButtonText}>Open On YouTube</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <WebView
+                source={{
+                  uri: `https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&playsinline=1&rel=0&modestbranding=1`,
+                }}
+                allowsFullscreenVideo
+                mediaPlaybackRequiresUserAction={false}
+                allowsInlineMediaPlayback
+                onError={() => setTrailerLoadFailed(true)}
+                onHttpError={() => setTrailerLoadFailed(true)}
+                style={styles.trailerWebview}
+              />
+            )
+          ) : (
+            <View style={styles.centeredState}>
+              <Text style={styles.stateBody}>Trailer unavailable.</Text>
+            </View>
+          )}
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -262,11 +427,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  playIcon: {
-    width: 22,
-    height: 24,
-    marginLeft: 2,
-  },
   card: {
     marginTop: -28,
     marginHorizontal: 16,
@@ -335,6 +495,76 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.title,
     fontSize: 14,
   },
+  countryRow: {
+    marginTop: 10,
+    gap: 8,
+    paddingRight: 10,
+  },
+  countryChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  countryChipActive: {
+    backgroundColor: COLORS.accent,
+    borderColor: COLORS.accent,
+  },
+  countryChipText: {
+    color: COLORS.textGray,
+    fontSize: 12,
+    fontFamily: TYPOGRAPHY.title,
+  },
+  countryChipTextActive: {
+    color: COLORS.primary,
+  },
+  providerLinkBtn: {
+    marginTop: 12,
+    alignSelf: "flex-start",
+    backgroundColor: COLORS.accent,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  providerLinkBtnText: {
+    color: COLORS.primary,
+    fontFamily: TYPOGRAPHY.title,
+    fontSize: 12,
+  },
+  providerSection: {
+    marginTop: 14,
+  },
+  providerSectionTitle: {
+    color: COLORS.text,
+    fontFamily: TYPOGRAPHY.title,
+    marginBottom: 8,
+  },
+  providerRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  providerCard: {
+    width: 80,
+    alignItems: "center",
+  },
+  providerLogo: {
+    width: 52,
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  providerName: {
+    color: COLORS.textGray,
+    fontSize: 11,
+    textAlign: "center",
+    marginTop: 6,
+  },
   companyList: {
     marginTop: 10,
     flexDirection: "row",
@@ -352,5 +582,28 @@ const styles = StyleSheet.create({
   companyTagText: {
     color: COLORS.textGray,
     fontSize: 12,
+  },
+  trailerModalContainer: {
+    flex: 1,
+    backgroundColor: COLORS.primary,
+  },
+  trailerHeader: {
+    paddingTop: 50,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  trailerTitle: {
+    color: COLORS.text,
+    fontFamily: TYPOGRAPHY.title,
+    fontSize: 16,
+  },
+  trailerWebview: {
+    flex: 1,
+    backgroundColor: "black",
   },
 });

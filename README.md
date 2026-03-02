@@ -7,6 +7,7 @@ It combines TMDB content APIs with Firebase Auth + Firestore to deliver:
 2. Global search across movie and TV
 3. Save-to-favorites per user account
 4. Trending content powered by Firestore search metrics
+5. AI recommendations via secure server-side OpenAI proxy
 
 ## Tech Stack
 
@@ -24,9 +25,44 @@ It combines TMDB content APIs with Firebase Auth + Firestore to deliver:
 3. Movies tab (trending/latest + infinite pagination)
 4. TV Shows tab (trending/latest + infinite pagination)
 5. Search (debounced, unified movie + TV)
-6. Details pages (movie + tv)
+6. Details pages (movie + tv, in-app trailers, where-to-watch by country)
 7. Saved favorites per user
 8. Profile and account actions
+9. AI recommendations in Home (`For You`) based on user favorites
+
+## AI Recommendations: How It Works
+
+The recommendation flow is intentionally split into two layers:
+
+1. Recommendation generation:
+   1. App sends user context (favorites, optional recent searches, country).
+   2. Backend proxy (Firebase Function) calls OpenAI and returns structured picks:
+      1. `title`
+      2. `mediaType` (`movie` | `tv` | `any`)
+      3. `reason`
+2. Content enrichment:
+   1. App resolves AI titles against TMDB search endpoints.
+   2. It maps each recommendation to actual content cards (poster, id, route target).
+3. Home rendering:
+   1. `For You (AI)` appears for logged-in users.
+   2. If user has no favorites, it shows a guidance state.
+   3. If AI is unavailable, it fails gracefully with fallback messaging.
+
+## What Was Added In This Phase
+
+1. Secure AI architecture:
+   1. Firebase Function OpenAI proxy (`functions/src/index.js`)
+   2. Secret-based key handling (`OPENAI_API_KEY`) for production mode
+2. Client recommendation service:
+   1. `services/recommendations.ts` for endpoint call + TMDB enrichment
+   2. Robust parsing of OpenAI response output structures
+3. Home integration:
+   1. New `For You (AI)` rail in Home
+   2. Favorite-driven recommendation queries
+4. Details experience upgrades:
+   1. In-app trailer playback
+   2. YouTube fallback when embedded trailer is blocked
+   3. Where-to-watch providers by country (stream/rent/buy)
 
 ## Screenshots
 
@@ -34,7 +70,8 @@ It combines TMDB content APIs with Firebase Auth + Firestore to deliver:
 
   <img src="./docs/screenshots/auth.jpg" height="450" alt="Auth" />
   <img src="./docs/screenshots/auth-create.jpg" height="450" alt="Auth-create" />
-  <img src="./docs/screenshots/home.jpg" height="450" alt="Home" />
+  <img src="./docs/screenshots/ai-recom-with-no-save.jpg" height="450" alt="Ai recommendation with no save" />
+  <img src="./docs/screenshots/ai-recom-result.jpg" height="450" alt="Ai recommendation results" />
   <img src="./docs/screenshots/movies.jpg" height="450" alt="Movies" />
   <img src="./docs/screenshots/tvshows.jpg" height="450" alt="TV Shows" />
   <img src="./docs/screenshots/profile.jpg" height="450" alt="Profile" />
@@ -95,6 +132,28 @@ Use `.env.example` as the reference for required variables.
 
 Never commit real secrets.
 
+OpenAI recommendation endpoint (optional until deployed):
+
+```env
+EXPO_PUBLIC_RECOMMENDER_ENDPOINT=
+```
+
+Demo-only fallback (not for production):
+
+```env
+EXPO_PUBLIC_ENABLE_CLIENT_AI_DEMO=false
+EXPO_PUBLIC_OPENAI_API_KEY=
+```
+
+Behavior by configuration:
+
+1. `EXPO_PUBLIC_RECOMMENDER_ENDPOINT` set:
+   1. App uses server-side Firebase Function proxy (recommended).
+2. `EXPO_PUBLIC_RECOMMENDER_ENDPOINT` empty + `EXPO_PUBLIC_ENABLE_CLIENT_AI_DEMO=true`:
+   1. App uses demo-only direct client OpenAI mode (for temporary situations).
+3. Neither configured:
+   1. App still works fully, AI rail shows graceful no-data/fallback state.
+
 ## Firestore Setup
 
 Starter backend files added:
@@ -110,11 +169,67 @@ firebase deploy --only firestore:rules
 firebase deploy --only firestore:indexes
 ```
 
+## OpenAI Recommender Setup (Server-Side)
+
+This app uses a Firebase Function proxy so OpenAI keys never ship in the mobile client.
+
+1. Install function dependencies
+
+```bash
+cd functions
+npm install
+```
+
+2. Set secret key for functions
+
+```bash
+firebase functions:secrets:set OPENAI_API_KEY
+```
+
+3. Deploy functions
+
+```bash
+firebase deploy --only functions
+```
+
+4. Copy deployed URL into app `.env`
+
+```env
+EXPO_PUBLIC_RECOMMENDER_ENDPOINT=https://<region>-<project>.cloudfunctions.net/recommendations
+```
+
+### Temporary Demo Mode (No Blaze Upgrade)
+
+If you cannot deploy Firebase Functions yet, you can enable client-side AI only for your own usage only but not recommended for production:
+
+```env
+EXPO_PUBLIC_ENABLE_CLIENT_AI_DEMO=true
+EXPO_PUBLIC_OPENAI_API_KEY=<your-openai-key>
+EXPO_PUBLIC_RECOMMENDER_ENDPOINT=
+```
+
+Then restart:
+
+```bash
+npx expo start -c
+```
+
+Important: this exposes your OpenAI key in the client bundle. Use only for temporary situations, then disable it and remove the key.
+
+## AI Testing Checklist
+
+1. Sign in with a user account.
+2. Save at least 3-5 titles to favorites.
+3. Open Home and verify `For You (AI)` appears.
+4. Tap a recommendation and confirm navigation to details works.
+5. Pull-to-refresh Home and confirm recommendation refresh behavior.
+6. Remove favorites and verify the empty guidance state.
+
 ## Production Readiness (In Progress)
 
 Track progress in:
 
-1. [Portfolio Checklist](./docs/PORTFOLIO_CHECKLIST.md)
+1. [TodoChecklist](./docs/TODO_CHECKLIST.md)
 2. [Architecture Notes](./docs/ARCHITECTURE.md)
 3. [Security Notes](./docs/SECURITY.md)
 
@@ -129,10 +244,11 @@ services/         # TMDB + Firestore service layer
 config/           # env parsing and config
 types/            # TypeScript models
 scripts/          # project scripts
-docs/             # architecture, security, portfolio docs
+functions/        # Firebase Functions (OpenAI proxy)
+docs/             # architecture, security, todo_checklist docs
 ```
 
-## Portfolio Notes
+## Project Notes
 
 This project demonstrates:
 
@@ -144,3 +260,4 @@ This project demonstrates:
 ## License
 
 Personal portfolio project.
+

@@ -39,6 +39,9 @@ import TrendingCard from "@/components/trending/TrendingCard";
 import TrendingCarousel from "@/components/trending/TrendingCarousel";
 
 import { MaterialIcons } from "@expo/vector-icons";
+import { useAuth } from "@/contexts/AuthContext";
+import { useFavorites } from "@/contexts/FavoritesContext";
+import { fetchRecommendedContent, RecommendedContentItem } from "@/services/recommendations";
 
 const { width, height } = Dimensions.get("window");
 const PLACEHOLDER = "https://placehold.co/600x400/1a1a1a/FFFFFF.png";
@@ -300,6 +303,8 @@ const skeletonStyles = StyleSheet.create({
 
 export default function Home() {
   const router = useRouter();
+  const { user } = useAuth();
+  const { favorites } = useFavorites();
   const [refreshing, setRefreshing] = useState(false);
   const [trendingType, setTrendingType] = useState<"movie" | "tv">("movie");
   const [activeTrendingItem, setActiveTrendingItem] = useState<string | null>(
@@ -340,6 +345,24 @@ export default function Home() {
     error: tvShowsError,
     refetch: refetchTvShows,
   } = useQuery({ queryKey: queryKeys.latestTVList(), queryFn: () => fetchTVShows({ query: "" }) });
+
+  const favoriteTitles = useMemo(
+    () => favorites.slice(0, 10).map((item) => item.title).filter(Boolean),
+    [favorites]
+  );
+
+  const {
+    data: aiRecommendations,
+    isLoading: aiLoading,
+    isError: aiError,
+    error: aiErrorObj,
+    refetch: refetchAI,
+  } = useQuery({
+    queryKey: ["aiRecommendations", user?.uid ?? "guest", favoriteTitles.join("|")],
+    queryFn: () => fetchRecommendedContent({ favorites: favoriteTitles, country: "US" }),
+    enabled: Boolean(user?.uid && favoriteTitles.length > 0),
+    staleTime: 10 * 60_000,
+  });
 
   useEffect(() => {
     // Animate content in when data is loaded
@@ -468,6 +491,7 @@ export default function Home() {
         refreshTvTrending(),
         refetchMovies(),
         refetchTvShows(),
+        refetchAI(),
       ]);
     } catch (error) {
       console.error("Error refreshing data:", error);
@@ -609,6 +633,76 @@ export default function Home() {
 
               <TrendingCarousel items={displayedTrending} />
             </View>
+
+            {/* Latest Movies */}
+            {user?.uid ? (
+              <View style={styles.listSection}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitleAi}>
+                    For You (AI recommendations)
+                  </Text>
+                </View>
+                <View style={styles.listWrapper}>
+                  {aiLoading ? (
+                    <View style={styles.aiStateBox}>
+                      <ActivityIndicator color={COLORS.accent} />
+                      <Text style={styles.aiStateText}>Building recommendations...</Text>
+                    </View>
+                  ) : aiError ? (
+                    <View style={styles.aiStateBox}>
+                      <Text style={styles.aiStateText}>
+                        AI error: {aiErrorObj instanceof Error ? aiErrorObj.message : "Unknown error"}
+                      </Text>
+                    </View>
+                  ) : !favoriteTitles.length ? (
+                    <View style={styles.aiStateBox}>
+                      <Text style={styles.aiStateText}>Save a few titles to unlock AI recommendations.</Text>
+                    </View>
+                  ) : (aiRecommendations?.length ?? 0) === 0 ? (
+                    <View style={styles.aiStateBox}>
+                      <Text style={styles.aiStateText}>No AI recommendations available right now.</Text>
+                    </View>
+                  ) : (
+                    <FlashList
+                      estimatedItemSize={180}
+                      data={aiRecommendations ?? []}
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      keyExtractor={(item, index) => `ai-${item.type}-${item.id}-${index}`}
+                      renderItem={({ item }: { item: RecommendedContentItem }) => (
+                        <TouchableOpacity
+                          onPress={() =>
+                            router.push({
+                              pathname: item.type === "tv" ? "/tv/[id]" : "/movie/[id]",
+                              params: { id: String(item.id) },
+                            })
+                          }
+                          style={styles.aiCard}
+                          activeOpacity={0.85}
+                        >
+                          <Image
+                            source={{
+                              uri: item.poster_path
+                                ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                                : PLACEHOLDER,
+                            }}
+                            style={styles.aiPoster}
+                            contentFit="cover"
+                          />
+                          <Text style={styles.aiTitle} numberOfLines={1}>
+                            {item.title}
+                          </Text>
+                          <Text style={styles.aiReason} numberOfLines={2}>
+                            {item.reason}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                      contentContainerStyle={styles.listPadding}
+                    />
+                  )}
+                </View>
+              </View>
+            ) : null}
 
             {/* Latest Movies */}
             <View style={styles.listSection}>
@@ -806,6 +900,11 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.title,
     color: COLORS.text,
   },
+  sectionTitleAi: {
+    fontSize: 14,
+    fontFamily: TYPOGRAPHY.title,
+    color: COLORS.text,
+  },
   toggleContainer: {
     flexDirection: 'row',
     backgroundColor: COLORS.card,
@@ -843,11 +942,49 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   listWrapper: {
-    minHeight: 180, // Resolves FlashList warning
+    minHeight: 80, 
   },
   listPadding: {
     paddingBottom: 8,
     paddingLeft: 10,
+  },
+  aiStateBox: {
+    marginHorizontal: 12,
+    backgroundColor: COLORS.card,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    padding: 14,
+    minHeight: 72,
+    justifyContent: "center",
+    gap: 8,
+  },
+  aiStateText: {
+    color: COLORS.textGray,
+    fontSize: 12,
+  },
+  aiCard: {
+    width: 150,
+    marginRight: 10,
+  },
+  aiPoster: {
+    width: 150,
+    height: 210,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  aiTitle: {
+    color: COLORS.text,
+    marginTop: 8,
+    fontFamily: TYPOGRAPHY.title,
+    fontSize: 13,
+  },
+  aiReason: {
+    color: COLORS.textMuted,
+    marginTop: 4,
+    fontSize: 11,
+    lineHeight: 16,
   },
   categoriesSection: {
     paddingHorizontal: 24,

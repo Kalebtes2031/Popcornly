@@ -16,6 +16,7 @@ Popcornly 2 is a mobile app with a BaaS backend and third-party content API.
 3. Tabs load content via service layer (`services/api.ts`, `services/firestoreService.ts`).
 4. React Query caches responses and coordinates loading/error states.
 5. Favorites and metrics persist in Firestore.
+6. AI recommendation requests are sent to a Firebase Function, which calls OpenAI and returns structured picks.
 
 ## 3. Firestore Collections
 
@@ -23,6 +24,14 @@ Popcornly 2 is a mobile app with a BaaS backend and third-party content API.
 2. `favorites`
 3. `metrics`
 4. `tvMetrics`
+
+## 3.1 Recommendation Backend
+
+1. Endpoint: Firebase Function `recommendations`
+2. Input: favorites, recent searches, country
+3. Processing: server-side OpenAI call (`gpt-4.1-mini`)
+4. Output: normalized recommendation list (`title`, `mediaType`, `reason`)
+5. Client enrichment: app resolves titles to TMDB items for posters, IDs, and navigation
 
 ## 4. Routing
 
@@ -33,6 +42,7 @@ Primary route groups:
 3. `app/movie/[id]`
 4. `app/tv/[id]`
 5. `app/search`
+6. AI section in `app/(tabs)/home.tsx`
 
 ## 5. State Strategy
 

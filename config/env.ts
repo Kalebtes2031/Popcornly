@@ -10,6 +10,9 @@ const envSchema = z.object({
     EXPO_PUBLIC_MOVIE_API_KEY: z.string(),
     EXPO_PUBLIC_MOVIE_ACCESS_TOKEN: z.string(),
     EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: z.string().optional(),
+    EXPO_PUBLIC_RECOMMENDER_ENDPOINT: z.string().optional(),
+    EXPO_PUBLIC_ENABLE_CLIENT_AI_DEMO: z.string().optional(),
+    EXPO_PUBLIC_OPENAI_API_KEY: z.string().optional(),
 });
 
 const _env = envSchema.safeParse({
@@ -22,6 +25,9 @@ const _env = envSchema.safeParse({
     EXPO_PUBLIC_MOVIE_API_KEY: process.env.EXPO_PUBLIC_MOVIE_API_KEY,
     EXPO_PUBLIC_MOVIE_ACCESS_TOKEN: process.env.EXPO_PUBLIC_MOVIE_ACCESS_TOKEN,
     EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    EXPO_PUBLIC_RECOMMENDER_ENDPOINT: process.env.EXPO_PUBLIC_RECOMMENDER_ENDPOINT,
+    EXPO_PUBLIC_ENABLE_CLIENT_AI_DEMO: process.env.EXPO_PUBLIC_ENABLE_CLIENT_AI_DEMO,
+    EXPO_PUBLIC_OPENAI_API_KEY: process.env.EXPO_PUBLIC_OPENAI_API_KEY,
 });
 
 if (!_env.success) {
