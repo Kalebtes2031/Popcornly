@@ -16,7 +16,7 @@
 - [x] Firestore security rules hardened
 - [x] Firestore rules emulator tests (`@firebase/rules-unit-testing`)
 - [x] Firestore indexes documented
-- [ ] Service-layer unit tests
+- [x] Service-layer unit tests
 - [ ] Integration test for auth + favorites flow
 - [x] CI pipeline (`lint`, `tsc`, tests)
 

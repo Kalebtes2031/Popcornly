@@ -123,6 +123,7 @@ Useful commands:
 npm run lint
 npx tsc --noEmit
 npm run test:firestore-rules
+npm run test:services
 npm run android
 npm run ios
 ```
@@ -211,6 +212,28 @@ What is validated:
 2. User profile ownership + immutable field protection.
 3. Metrics schema checks and controlled `count` increments.
 4. Unauthenticated write denial.
+
+### Service-Layer Unit Tests
+
+Service tests run with `tsx` + Node test runner and mocked fetch responses.
+
+Run locally:
+
+```bash
+npm run test:services
+```
+
+Covered modules:
+
+1. `services/api.ts`
+2. `services/recommendations.ts`
+
+Validated behavior includes:
+
+1. TMDB mapping and defensive parsing (`results` missing, error paths).
+2. Trailer key selection logic.
+3. Watch-provider fallback handling.
+4. AI recommendation parsing and enrichment flow (endpoint mode and demo mode).
 
 ## OpenAI Recommender Setup (Server-Side)
 
