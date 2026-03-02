@@ -9,7 +9,6 @@ const {
 const {
   doc,
   setDoc,
-  getDoc,
   deleteDoc,
   collection,
   query,
@@ -75,9 +74,9 @@ test("authenticated user can create profile + add/list/delete own favorite", asy
   }
 
   await assertSucceeds(deleteDoc(doc(db, "favorites", "fav_1")));
-  const removed = await assertSucceeds(getDoc(doc(db, "favorites", "fav_1")));
-  if (removed.exists()) {
-    throw new Error("Favorite should be deleted");
+  const afterDeleteSnap = await assertSucceeds(getDocs(listQuery));
+  if (afterDeleteSnap.size !== 0) {
+    throw new Error(`Expected 0 favorites after delete, got ${afterDeleteSnap.size}`);
   }
 });
 
