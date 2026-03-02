@@ -1,47 +1,67 @@
-﻿# Security Notes
+# Security Notes
 
 ## Current Security Priorities
 
-1. Enforce Firestore least-privilege access
-2. Prevent cross-user reads/writes for favorites
-3. Protect user profile updates
-4. Restrict metrics writes to authenticated users
+1. Enforce least-privilege access for every collection.
+2. Prevent cross-user data access and ownership spoofing.
+3. Restrict writes to expected schema only.
+4. Lock immutable fields and deny unknown collections by default.
 
-## Firestore Rules Starter (to be adapted)
+## Hardened Firestore Rules (Implemented)
 
-```rules
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
+Current `firestore.rules` now enforces:
 
-    match /favorites/{favoriteId} {
-      allow read, create, update, delete: if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
-      allow read, delete: if request.auth != null
-        && resource.data.userId == request.auth.uid;
-    }
+1. `users` collection:
+1. Read only by owner (`request.auth.uid == userId`).
+2. Create requires exact keys and type checks (`uid`, `email`, `username`, `createdAt`).
+3. Update only allows `username` mutation; `uid`, `email`, `createdAt` are immutable.
+4. Delete denied.
+2. `favorites` collection:
+1. Read/delete only for owner (`resource.data.userId == request.auth.uid`).
+2. Create requires strict schema (`userId`, `itemId`, `type`, `title`, `poster`, `savedAt`).
+3. `type` limited to `movie` or `tv`.
+4. Update denied.
+3. `metrics` and `tvMetrics` collections:
+1. Public read allowed.
+2. Create requires strict schema and `count == 1`.
+3. Update only allows `count` increment by exactly `+1`; all other fields immutable.
+4. Delete denied.
+4. Catch-all deny rule for all undeclared collections.
 
-    match /metrics/{docId} {
-      allow read: if true;
-      allow create, update: if request.auth != null;
-      allow delete: if false;
-    }
+## Manual Validation (Recommended)
 
-    match /tvMetrics/{docId} {
-      allow read: if true;
-      allow create, update: if request.auth != null;
-      allow delete: if false;
-    }
-  }
-}
+Use Firebase Emulator Suite to validate allow/deny behavior before deploy:
+
+```bash
+firebase emulators:start --only firestore
+```
+
+Validation matrix to run manually from app or test scripts:
+
+1. `users`:
+1. Owner can create/read/update username.
+2. Non-owner cannot read or write.
+3. Owner cannot change `email`/`uid`/`createdAt`.
+2. `favorites`:
+1. Auth user can create favorite for own `userId`.
+2. Auth user cannot create favorite for another `userId`.
+3. Non-owner cannot read/delete other user favorite.
+3. `metrics`/`tvMetrics`:
+1. Auth user can create metric document with valid fields.
+2. Update with `count + 1` succeeds.
+3. Update changing title/id/searchTerm fails.
+4. Unauthenticated write fails.
+
+## Deployment
+
+```bash
+firebase deploy --only firestore:rules
+firebase deploy --only firestore:indexes
 ```
 
 ## Follow-up
 
-1. Add explicit schema checks in rules (`hasOnly`, expected fields/types)
-2. Add App Check for abuse mitigation
-3. Add rate limiting strategy via backend function if metrics gets abused
-4. Keep OpenAI key only in Firebase Functions secrets (`OPENAI_API_KEY`)
+1. Add automated Firestore rules tests in CI (`@firebase/rules-unit-testing`).
+2. Add Firebase App Check enforcement for abuse resistance.
+3. Move metrics writes to Cloud Functions if stricter anti-abuse controls are needed.
+4. Keep OpenAI key only in Firebase Functions secrets (`OPENAI_API_KEY`).

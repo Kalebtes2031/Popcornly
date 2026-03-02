@@ -1,4 +1,4 @@
-﻿# Popcornly
+# Popcornly
 
 Popcornly is a fullstack mobile movie discovery app built with Expo + React Native.
 It combines TMDB content APIs with Firebase Auth + Firestore to deliver:
@@ -74,8 +74,8 @@ The recommendation flow is intentionally split into two layers:
   <img src="./docs/screenshots/ai-recom-result.jpg" height="450" alt="Ai recommendation results" />
   <img src="./docs/screenshots/movies.jpg" height="450" alt="Movies" />
   <img src="./docs/screenshots/tvshows.jpg" height="450" alt="TV Shows" />
-  <img src="./docs/screenshots/profile.jpg" height="450" alt="Profile" />
   <img src="./docs/screenshots/saved.jpg" height="450" alt="Saved" />
+  <img src="./docs/screenshots/profile.jpg" height="450" alt="Profile" />
   <img src="./docs/screenshots/search.jpg" height="450" alt="Search" />
   <img src="./docs/screenshots/searching.jpg" height="450" alt="Searching" />
   <img src="./docs/screenshots/movie-details.jpg" height="450" alt="Movie Details" />
@@ -156,18 +156,42 @@ Behavior by configuration:
 
 ## Firestore Setup
 
-Starter backend files added:
+Backend config files used by this app:
 
 1. `firestore.rules`
 2. `firestore.indexes.json`
 3. `firebase.json`
 
-Deploy after review:
+### Index Coverage
+
+Current composite index:
+
+1. Collection: `favorites`
+2. Fields: `userId` ascending + `savedAt` descending
+3. Purpose: user-scoped favorites list sorted by latest saved
+
+### Deploy Firestore Config
 
 ```bash
 firebase deploy --only firestore:rules
 firebase deploy --only firestore:indexes
 ```
+
+### Manual Security Validation (Before Portfolio Demo)
+
+1. Start Firestore emulator:
+
+```bash
+firebase emulators:start --only firestore
+```
+
+2. Validate key scenarios:
+1. User can read/write only their own `users/{uid}`.
+2. User can only create/read/delete their own `favorites` docs.
+3. `metrics`/`tvMetrics` writes require auth and valid schema.
+4. Unknown collections are denied by default.
+
+See detailed security checklist in [Security Notes](./docs/SECURITY.md).
 
 ## OpenAI Recommender Setup (Server-Side)
 
@@ -260,4 +284,5 @@ This project demonstrates:
 ## License
 
 Personal portfolio project.
+
 

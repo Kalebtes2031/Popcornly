@@ -1,27 +1,111 @@
-﻿rules_version = '2';
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isNonEmptyString(value, maxLen) {
+      return value is string && value.size() > 0 && value.size() <= maxLen;
+    }
+
+    function isNullableString(value, maxLen) {
+      return value == null || (value is string && value.size() <= maxLen);
+    }
+
+    function isIsoDateOrTimestamp(value) {
+      return value is string || value is timestamp;
+    }
+
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'username', 'createdAt'])
+        && request.resource.data.uid == userId
+        && isNonEmptyString(request.resource.data.email, 254)
+        && isNonEmptyString(request.resource.data.username, 50)
+        && isIsoDateOrTimestamp(request.resource.data.createdAt);
+
+      allow update: if isOwner(userId)
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'username', 'createdAt'])
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.createdAt == resource.data.createdAt
+        && isNonEmptyString(request.resource.data.username, 50);
+
+      allow delete: if false;
     }
 
     match /favorites/{favoriteId} {
-      allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
-      allow read, update, delete: if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      allow read, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasOnly(['userId', 'itemId', 'type', 'title', 'poster', 'savedAt'])
+        && request.resource.data.userId == request.auth.uid
+        && (request.resource.data.itemId is int || request.resource.data.itemId is string)
+        && (request.resource.data.type == 'movie' || request.resource.data.type == 'tv')
+        && isNonEmptyString(request.resource.data.title, 200)
+        && isNullableString(request.resource.data.poster, 500)
+        && request.resource.data.savedAt is string;
+
+      allow update: if false;
     }
 
     match /metrics/{docId} {
       allow read: if true;
-      allow create, update: if request.auth != null;
+
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasOnly(['searchTerm', 'movie_id', 'title', 'poster_url', 'count'])
+        && isNonEmptyString(request.resource.data.searchTerm, 120)
+        && request.resource.data.movie_id is int
+        && isNonEmptyString(request.resource.data.title, 200)
+        && isNullableString(request.resource.data.poster_url, 500)
+        && request.resource.data.count is int
+        && request.resource.data.count == 1;
+
+      allow update: if isSignedIn()
+        && request.resource.data.keys().hasOnly(['searchTerm', 'movie_id', 'title', 'poster_url', 'count'])
+        && request.resource.data.searchTerm == resource.data.searchTerm
+        && request.resource.data.movie_id == resource.data.movie_id
+        && request.resource.data.title == resource.data.title
+        && request.resource.data.poster_url == resource.data.poster_url
+        && request.resource.data.count is int
+        && request.resource.data.count == resource.data.count + 1;
+
       allow delete: if false;
     }
 
     match /tvMetrics/{docId} {
       allow read: if true;
-      allow create, update: if request.auth != null;
+
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasOnly(['searchTerm', 'tv_id', 'title', 'poster_url', 'count'])
+        && isNonEmptyString(request.resource.data.searchTerm, 120)
+        && request.resource.data.tv_id is int
+        && isNonEmptyString(request.resource.data.title, 200)
+        && isNullableString(request.resource.data.poster_url, 500)
+        && request.resource.data.count is int
+        && request.resource.data.count == 1;
+
+      allow update: if isSignedIn()
+        && request.resource.data.keys().hasOnly(['searchTerm', 'tv_id', 'title', 'poster_url', 'count'])
+        && request.resource.data.searchTerm == resource.data.searchTerm
+        && request.resource.data.tv_id == resource.data.tv_id
+        && request.resource.data.title == resource.data.title
+        && request.resource.data.poster_url == resource.data.poster_url
+        && request.resource.data.count is int
+        && request.resource.data.count == resource.data.count + 1;
+
       allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

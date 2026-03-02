@@ -1,4 +1,4 @@
-﻿# Todo Checklist
+# Todo Checklist
 
 ## Phase 1: Foundation (Current)
 
@@ -13,11 +13,12 @@
 ## Phase 2: Fullstack Credibility
 
 - [x] AI recommendation pipeline (client -> Firebase Function -> OpenAI -> TMDB enrichment)
-- [ ] Firestore security rules hardened and tested
-- [ ] Firestore indexes documented
+- [x] Firestore security rules hardened
+- [ ] Firestore rules emulator tests (`@firebase/rules-unit-testing`)
+- [x] Firestore indexes documented
 - [ ] Service-layer unit tests
 - [ ] Integration test for auth + favorites flow
-- [ ] CI pipeline (`lint`, `tsc`, tests)
+- [x] CI pipeline (`lint`, `tsc`, tests)
 
 ## Phase 3: Production Signals
 
@@ -34,4 +35,3 @@
 - [ ] Add architecture diagram image
 - [ ] Add "Challenges and Tradeoffs" section in README
 - [ ] Add deployment/release notes
-
