@@ -17,7 +17,7 @@
 - [x] Firestore rules emulator tests (`@firebase/rules-unit-testing`)
 - [x] Firestore indexes documented
 - [x] Service-layer unit tests
-- [ ] Integration test for auth + favorites flow
+- [x] Integration test for auth + favorites flow
 - [x] CI pipeline (`lint`, `tsc`, tests)
 
 ## Phase 3: Production Signals

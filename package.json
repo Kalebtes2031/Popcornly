@@ -9,9 +9,10 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test": "npm run test:firestore-rules && npm run test:services",
+    "test": "npm run test:firestore-rules && npm run test:services && npm run test:integration",
     "test:firestore-rules": "firebase emulators:exec --only firestore \"node tests/firestore.rules.test.cjs\"",
-    "test:services": "tsx --test tests/services/*.test.ts"
+    "test:services": "tsx --test tests/services/*.test.ts",
+    "test:integration": "firebase emulators:exec --only firestore \"node tests/integration/auth-favorites.flow.test.cjs\""
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

@@ -124,6 +124,7 @@ npm run lint
 npx tsc --noEmit
 npm run test:firestore-rules
 npm run test:services
+npm run test:integration
 npm run android
 npm run ios
 ```
@@ -234,6 +235,23 @@ Validated behavior includes:
 2. Trailer key selection logic.
 3. Watch-provider fallback handling.
 4. AI recommendation parsing and enrichment flow (endpoint mode and demo mode).
+
+### Integration Test: Auth + Favorites Flow
+
+Integration coverage runs against Firestore emulator with authenticated and unauthenticated contexts.
+
+Run locally:
+
+```bash
+npm run test:integration
+```
+
+Flow validated:
+
+1. Authenticated user can create own profile doc.
+2. Authenticated user can add/list/delete own favorites.
+3. Cross-user favorites read is denied.
+4. Unauthenticated favorites write is denied.
 
 ## OpenAI Recommender Setup (Server-Side)
 
