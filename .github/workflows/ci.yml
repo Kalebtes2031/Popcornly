@@ -36,6 +36,15 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
+      - name: Setup Java (Firestore Emulator)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
       - name: Run tests (if present)
         run: npm run test --if-present
 

@@ -1,4 +1,4 @@
-# Popcornly
+﻿# Popcornly
 
 Popcornly is a fullstack mobile movie discovery app built with Expo + React Native.
 It combines TMDB content APIs with Firebase Auth + Firestore to deliver:
@@ -122,6 +122,7 @@ Useful commands:
 ```bash
 npm run lint
 npx tsc --noEmit
+npm run test:firestore-rules
 npm run android
 npm run ios
 ```
@@ -177,7 +178,7 @@ firebase deploy --only firestore:rules
 firebase deploy --only firestore:indexes
 ```
 
-### Manual Security Validation (Before Portfolio Demo)
+### Manual Security Validation 
 
 1. Start Firestore emulator:
 
@@ -192,6 +193,24 @@ firebase emulators:start --only firestore
 4. Unknown collections are denied by default.
 
 See detailed security checklist in [Security Notes](./docs/SECURITY.md).
+
+### Automated Firestore Rules Tests
+
+Rules are tested with `@firebase/rules-unit-testing` against the Firestore emulator.
+Java is required for local emulator runtime.
+
+Run locally:
+
+```bash
+npm run test:firestore-rules
+```
+
+What is validated:
+
+1. Favorites ownership checks (create/read/delete scope).
+2. User profile ownership + immutable field protection.
+3. Metrics schema checks and controlled `count` increments.
+4. Unauthenticated write denial.
 
 ## OpenAI Recommender Setup (Server-Side)
 

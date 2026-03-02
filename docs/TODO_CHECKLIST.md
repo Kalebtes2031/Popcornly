@@ -14,7 +14,7 @@
 
 - [x] AI recommendation pipeline (client -> Firebase Function -> OpenAI -> TMDB enrichment)
 - [x] Firestore security rules hardened
-- [ ] Firestore rules emulator tests (`@firebase/rules-unit-testing`)
+- [x] Firestore rules emulator tests (`@firebase/rules-unit-testing`)
 - [x] Firestore indexes documented
 - [ ] Service-layer unit tests
 - [ ] Integration test for auth + favorites flow

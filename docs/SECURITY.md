@@ -59,6 +59,20 @@ firebase deploy --only firestore:rules
 firebase deploy --only firestore:indexes
 ```
 
+## Automated Rules Testing
+
+Test file: `tests/firestore.rules.test.cjs`
+
+Run:
+
+```bash
+npm run test:firestore-rules
+```
+
+Note: Firestore emulator requires Java installed and available on `PATH`.
+
+The test suite runs against Firestore emulator and verifies both `allow` and `deny` paths for `users`, `favorites`, and `metrics`.
+
 ## Follow-up
 
 1. Add automated Firestore rules tests in CI (`@firebase/rules-unit-testing`).
